@@ -95,17 +95,23 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $GH_TOKEN" \
-            -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$GITHUB_REPOSITORY/pages")
-          if [ "$code" = "200" ]; then
+          build_type=$(curl -s -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/pages" \
+            | python -c "import json, sys; print(json.load(sys.stdin).get('build_type') or '')" 2>/dev/null || true)
+          if [ "$build_type" = "workflow" ]; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
           else
             echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "::warning title=GitHub Pages is not enabled::Open Settings -> Pages, set Source to 'GitHub Actions', then re-run this workflow."
+            if [ -n "$build_type" ]; then
+              problem="GitHub Pages publishes from a branch, not from this workflow."
+            else
+              problem="GitHub Pages is not enabled for this repository yet."
+            fi
+            echo "::warning title=Site built but not published::$problem Open Settings -> Pages and set Source to 'GitHub Actions', then re-run this workflow."
             {
               echo "### The site was built but not published"
-              echo "GitHub Pages is not enabled for this repository yet. Open **Settings → Pages → Build and deployment**,"
-              echo "set **Source** to **GitHub Actions**, then re-run this workflow (Actions tab → GitHub Pages → Run workflow)."
+              echo "$problem Open **Settings → Pages → Build and deployment**, set **Source** to"
+              echo "**GitHub Actions**, then re-run this workflow (Actions tab → GitHub Pages → Run workflow)."
             } >> "$GITHUB_STEP_SUMMARY"
           fi
 
