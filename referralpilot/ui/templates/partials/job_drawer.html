@@ -4,7 +4,7 @@
   <div class="absolute inset-0 bg-slate-900/30" onclick="closeDrawer()"></div>
   <aside class="relative flex h-full w-full max-w-3xl flex-col bg-white shadow-2xl">
     <!-- header -->
-    <header class="border-b border-slate-200 px-6 py-4">
+    <header class="border-b border-slate-200 px-4 py-4 sm:px-6">
       <div class="flex items-start gap-4">
         <div class="min-w-0 flex-1">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -30,15 +30,15 @@
       </div>
     </header>
 
-    <div class="flex-1 space-y-6 overflow-y-auto px-6 py-5">
+    <div class="flex-1 space-y-6 overflow-y-auto px-4 py-5 sm:px-6">
       <!-- match -->
       <section class="rounded-xl border border-slate-200 p-4">
-        <div class="flex items-center gap-5">
+        <div class="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
           <div class="score-ring {{ job.match_score|score_class }}">
             <span class="text-2xl font-bold">{{ '%.0f'|format(job.match_score) if job.match_score is not none else '—' }}</span>
             <span class="text-[10px] font-semibold uppercase tracking-wide opacity-70">ATS match</span>
           </div>
-          <div class="grid flex-1 grid-cols-2 gap-x-6 gap-y-2 text-xs">
+          <div class="grid w-full flex-1 grid-cols-1 gap-x-6 gap-y-2 text-xs sm:grid-cols-2">
             {% for key, text, weight in [('coverage', 'Skill coverage', '60%'), ('evidence', 'Backed by projects', '15%'), ('title_fit', 'Role fit', '15%'), ('experience_fit', 'Experience fit', '10%')] %}
             {% set value = breakdown.get(key) %}
             <div>
@@ -78,7 +78,7 @@
         </div>
         {% if has_pdf %}
         <div class="mt-2 flex flex-wrap items-center gap-3 rounded-lg bg-slate-50 px-3 py-2 text-sm">
-          <span class="font-medium text-slate-700">{{ job.resume_pdf_path|basename }}</span>
+          <span class="break-all font-medium text-slate-700">{{ job.resume_pdf_path|basename }}</span>
           <span class="text-xs text-slate-500">{{ job.resume_engine }} · {{ job.tailored_at|ago }}</span>
           <span class="ml-auto flex gap-2">
             <a class="link" href="/jobs/{{ job.id }}/resume.pdf" target="_blank" rel="noopener">View PDF</a>
@@ -97,7 +97,7 @@
 
       <!-- contacts -->
       <section>
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
           <h3 class="section-title">Referral contacts
             <span class="text-slate-400">· {{ job.domain or 'domain unknown' }}</span>
             {% if job.domain_source in ['guess', 'dns_guess'] %}<span class="chip ml-1 bg-amber-50 text-amber-700 ring-1 ring-amber-200" title="Add the real domain on the Companies page">domain guessed - verify</span>{% endif %}
@@ -113,7 +113,7 @@
           {% for c in contacts %}
           {% set email = latest_initial.get(c.id) %}
           <li class="rounded-lg border border-slate-200 p-3">
-            <div class="flex items-start gap-3">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-start">
               <div class="min-w-0 flex-1">
                 <p class="flex flex-wrap items-center gap-1.5 font-medium text-slate-900">
                   {{ c.name }}
@@ -126,15 +126,15 @@
                   {% if c.email %}<span class="chip {{ 'bg-emerald-50 text-emerald-700' if c.email_confidence >= 0.8 else 'bg-slate-100 text-slate-600' }}" title="Email confidence">{{ (c.email_confidence * 100)|round|int }}% · {{ c.email_source }}</span>{% endif %}
                 </p>
                 {% if c.alternate_emails and c.status in ['new', 'drafted'] %}
-                <form class="mt-1.5 flex items-center gap-1.5" hx-post="/contacts/{{ c.id }}/email" hx-target="#drawer" hx-swap="innerHTML">
-                  <select name="email" class="input input-sm w-64">
+                <form class="mt-1.5 flex flex-wrap items-center gap-1.5" hx-post="/contacts/{{ c.id }}/email" hx-target="#drawer" hx-swap="innerHTML">
+                  <select name="email" class="input input-sm w-full sm:w-64">
                     {% for alt in c.alternate_emails %}<option>{{ alt }}</option>{% endfor %}
                   </select>
                   <button class="btn btn-sm btn-ghost">Use this address</button>
                 </form>
                 {% endif %}
               </div>
-              <div class="flex shrink-0 flex-col items-end gap-1.5">
+              <div class="flex shrink-0 flex-col items-start gap-1.5 sm:items-end">
                 <span class="badge {{ c.status|status_class }}">{{ c.status|label }}</span>
                 {% if c.status not in ['opted_out', 'bounced'] %}
                   {% if email and email.status in ['draft', 'queued', 'failed'] %}
@@ -168,17 +168,17 @@
 
         <details class="mt-3 rounded-lg border border-slate-200 px-3 py-2">
           <summary class="cursor-pointer text-sm font-medium text-slate-700">Add a contact manually</summary>
-          <form class="mt-3 grid grid-cols-2 gap-2" hx-post="/jobs/{{ job.id }}/contacts" hx-target="#drawer" hx-swap="innerHTML">
+          <form class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2" hx-post="/jobs/{{ job.id }}/contacts" hx-target="#drawer" hx-swap="innerHTML">
             <input class="input" name="name" placeholder="Full name *" required>
             <input class="input" name="role" placeholder="Role (e.g. SDE 1)">
             <input class="input" name="email" type="email" placeholder="Email (leave blank to guess)">
             <input class="input" name="linkedin_url" placeholder="LinkedIn URL">
-            <div class="col-span-2 flex justify-end"><button class="btn btn-primary btn-sm">Add contact</button></div>
+            <div class="flex justify-end sm:col-span-2"><button class="btn btn-primary btn-sm">Add contact</button></div>
           </form>
         </details>
         <details class="mt-2 rounded-lg border border-slate-200 px-3 py-2">
           <summary class="cursor-pointer text-sm font-medium text-slate-700">OSINT search links</summary>
-          <ul class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+          <ul class="mt-2 grid grid-cols-1 gap-x-4 gap-y-1 text-sm sm:grid-cols-2">
             {% for link in links %}<li><a class="link" href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }} · {{ link.engine }} ↗</a></li>{% endfor %}
           </ul>
         </details>
@@ -190,7 +190,7 @@
         {% if emails %}
         <ul class="mt-2 divide-y divide-slate-100 rounded-lg border border-slate-200 text-sm">
           {% for e in emails %}
-          <li class="flex items-center gap-3 px-3 py-2">
+          <li class="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
             <span class="badge {{ e.status|status_class }}">{{ e.status|label }}</span>
             <span class="chip bg-slate-100 text-slate-600">{{ e.type }}</span>
             <div class="min-w-0 flex-1">

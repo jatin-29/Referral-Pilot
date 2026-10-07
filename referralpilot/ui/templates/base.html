@@ -14,19 +14,19 @@
 </head>
 <body class="h-full bg-slate-50 text-slate-800 antialiased">
   <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-    <div class="flex items-center gap-6 px-5 py-2.5">
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5 md:px-5">
       <a href="/" class="flex items-center gap-2.5 font-semibold text-slate-900">
         <span class="grid h-8 w-8 place-items-center rounded-lg bg-indigo-600 text-white shadow-sm">
           <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-10 3 6 2-3 4 7"/></svg>
         </span>
         <span>ReferralPilot</span>
       </a>
-      <nav class="flex items-center gap-1 text-sm">
+      <nav class="-mx-1 flex max-w-full items-center gap-1 overflow-x-auto text-sm">
         {% for key, href, text in [("board", "/", "Board"), ("outbox", "/outbox", "Outbox"), ("companies", "/companies", "Companies"), ("profile", "/profile", "Profile"), ("logs", "/logs", "Activity")] %}
         <a href="{{ href }}" class="rounded-md px-3 py-1.5 {{ 'bg-slate-100 font-medium text-slate-900' if page == key else 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">{{ text }}</a>
         {% endfor %}
       </nav>
-      <div id="status" class="ml-auto flex items-center gap-2 text-xs"
+      <div id="status" class="flex flex-wrap items-center gap-2 text-xs md:ml-auto"
            hx-get="/partials/status" hx-trigger="load, every 15s, refreshStatus from:body" hx-swap="innerHTML"></div>
     </div>
   </header>

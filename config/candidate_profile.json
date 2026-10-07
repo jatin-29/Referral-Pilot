@@ -2,7 +2,7 @@
   "_note": "Sample profile used for seeding. Replace it with your own details (or edit it on the dashboard's Profile page).",
   "full_name": "Aarav Mehta",
   "email": "aarav.mehta.dev@example.com",
-  "phone": "+91 98765 43210",
+  "phone": null,
   "location": "New Delhi, India",
   "headline": "final-year B.Tech CSE student focused on backend and distributed systems",
   "summary": "Backend-leaning software engineer who enjoys designing reliable APIs, data pipelines and distributed systems.",

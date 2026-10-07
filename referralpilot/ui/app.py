@@ -76,6 +76,13 @@ def fmt_ago(value: datetime | None) -> str:
     return "now"
 
 
+def fmt_due(value: datetime | None) -> str:
+    """When something scheduled happens: times already passed read as "now"."""
+    if not value or as_utc(value) <= utcnow():
+        return "now"
+    return fmt_ago(value)
+
+
 def score_class(score: float | None) -> str:
     if score is None:
         return "bg-slate-100 text-slate-500 ring-slate-200"
@@ -113,7 +120,7 @@ def label(value: str | None) -> str:
     return (value or "").replace("_", " ").capitalize()
 
 
-templates.env.filters.update(dt=fmt_dt, ago=fmt_ago, score_class=score_class, status_class=status_class,
+templates.env.filters.update(dt=fmt_dt, ago=fmt_ago, due=fmt_due, score_class=score_class, status_class=status_class,
                              label=label, basename=lambda p: Path(p).name if p else "")
 templates.env.globals.update(settings=get_settings, tojson=json.dumps)
 

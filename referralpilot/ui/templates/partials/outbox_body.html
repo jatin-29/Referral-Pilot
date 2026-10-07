@@ -48,7 +48,7 @@
   <div class="stat">
     <p class="stat-label">Next send</p>
     <p class="stat-value text-lg">
-      {% if status.paused %}Paused{% elif not status.in_window %}{{ status.next_window_at|ago }}{% elif status.capacity_frees_at %}{{ status.capacity_frees_at|ago }}{% elif status.next_send_at and status.next_send_at > now %}{{ status.next_send_at|ago }}{% elif status.queued %}within 30s{% else %}—{% endif %}
+      {% if status.paused %}Paused{% elif not status.in_window %}{{ status.next_window_at|due }}{% elif status.capacity_frees_at %}{{ status.capacity_frees_at|due }}{% elif status.next_send_at and status.next_send_at > now %}{{ status.next_send_at|ago }}{% elif status.queued %}within 30s{% else %}—{% endif %}
     </p>
     <p class="stat-hint">{{ status.pause_reason or ('window ' ~ status.window) }}</p>
   </div>

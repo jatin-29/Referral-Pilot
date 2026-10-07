@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Outbox · ReferralPilot{% endblock %}
 {% block content %}
-<div class="mx-auto max-w-7xl px-6 py-6">
+<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
   <div class="mb-5 flex items-end justify-between">
     <div>
       <h1 class="text-2xl font-semibold text-slate-900">Outbox</h1>
-      <p class="mt-1 text-sm text-slate-500">Approved emails drip out one at a time. Hard limits: {{ status.limit }} per rolling 24 hours, a random 3–7 minutes apart, inside {{ status.window }}, max {{ settings().per_company_daily_cap }} per company per day.</p>
+      <p class="mt-1 text-sm text-slate-500">Approved emails drip out one at a time. Hard limits: {{ status.limit }} per rolling 24 hours, a random 3–7 minutes apart, send window {{ status.window }}, max {{ settings().per_company_daily_cap }} per company per day.</p>
     </div>
   </div>
   <div id="outbox" hx-get="/partials/outbox" hx-trigger="refreshOutbox from:body, every 20s" hx-swap="innerHTML">

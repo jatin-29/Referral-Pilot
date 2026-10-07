@@ -9,11 +9,11 @@
 {% if status.paused %}
 <span class="pill bg-rose-50 text-rose-700 ring-rose-200" title="{{ status.pause_reason or '' }}">Sending paused</span>
 {% elif not status.in_window %}
-<span class="pill bg-slate-100 text-slate-600 ring-slate-200" title="Send window {{ status.window }}">Window opens {{ status.next_window_at|ago }}</span>
+<span class="pill bg-slate-100 text-slate-600 ring-slate-200" title="Send window {{ status.window }}">Window opens {{ status.next_window_at|due }}</span>
 {% elif status.capacity_frees_at %}
-<span class="pill bg-slate-100 text-slate-600 ring-slate-200">Daily cap hit · frees {{ status.capacity_frees_at|ago }}</span>
+<span class="pill bg-slate-100 text-slate-600 ring-slate-200">Daily cap hit · frees {{ status.capacity_frees_at|due }}</span>
 {% elif status.queued %}
-<span class="pill bg-indigo-50 text-indigo-700 ring-indigo-200">{{ status.queued }} queued · next {{ status.next_send_at|ago if status.next_send_at else 'now' }}</span>
+<span class="pill bg-indigo-50 text-indigo-700 ring-indigo-200">{{ status.queued }} queued · next {{ status.next_send_at|due }}</span>
 {% endif %}
 {% if status.paused %}
 <button class="btn btn-sm" hx-post="/outbox/resume" hx-swap="none">Resume sending</button>

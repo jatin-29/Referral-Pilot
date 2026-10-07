@@ -174,3 +174,14 @@ def test_contact_with_unsent_draft_can_be_removed(client, demo_jobs):
     with session_scope() as session:
         assert session.get(ReferralContact, contact_id) is None
         assert not session.exec(select(OutreachLog).where(OutreachLog.contact_id == contact_id)).all()
+
+
+def test_due_filter_reads_past_times_as_now():
+    from datetime import timedelta
+
+    from referralpilot.models import utcnow
+    from referralpilot.ui.app import fmt_due
+
+    assert fmt_due(None) == "now"
+    assert fmt_due(utcnow() - timedelta(hours=2)) == "now"
+    assert fmt_due(utcnow() + timedelta(minutes=10)) == "in 9m" or fmt_due(utcnow() + timedelta(minutes=10)) == "in 10m"

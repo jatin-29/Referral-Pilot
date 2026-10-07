@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Companies · ReferralPilot{% endblock %}
 {% block content %}
-<div class="mx-auto max-w-7xl px-6 py-6">
+<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
   <h1 class="text-2xl font-semibold text-slate-900">Target companies</h1>
   <p class="mt-1 text-sm text-slate-500">Public job boards crawled every {{ settings().harvest_interval_hours|round(1) }}h. The board token is the slug in the board URL - e.g. <code>boards.greenhouse.io/<b>stripe</b></code>, <code>jobs.lever.co/<b>meesho</b></code>, <code>jobs.ashbyhq.com/<b>ramp</b></code>. Seeded from <code>config/companies.json</code>.</p>
 
