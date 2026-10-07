@@ -201,7 +201,7 @@ referralpilot export-jobs [--out jobs.json] [--all-companies]     # crawl → pu
 
 ```bash
 python scripts/verify_pipeline.py      # same as `referralpilot verify`; add --live to try the real APIs
-pytest                                 # 119 tests: parsers, filters, scoring, LaTeX/Typst/fpdf builds,
+pytest                                 # 122 tests: parsers, filters, scoring, LaTeX/Typst/fpdf builds,
                                        # SMTP round-trip (aiosmtpd), queue limits, follow-ups, dashboard,
                                        # the browser runtime (web.py), snapshots, Gmail REST, XHR transport
 node scripts/web_smoke.cjs URL         # boots a built site in Chromium and walks the dashboard (CI runs it)

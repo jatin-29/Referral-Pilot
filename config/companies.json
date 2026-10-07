@@ -3,7 +3,7 @@
   "companies": [
     {"name": "Stripe", "ats_type": "greenhouse", "board_token": "stripe", "domain": "stripe.com", "enabled": true, "tags": ["fintech"]},
     {"name": "Databricks", "ats_type": "greenhouse", "board_token": "databricks", "domain": "databricks.com", "enabled": true, "tags": ["data"]},
-    {"name": "Postman", "ats_type": "greenhouse", "board_token": "postman", "domain": "postman.com", "enabled": true, "tags": ["devtools", "india"]},
+    {"name": "Postman", "ats_type": "greenhouse", "board_token": "postman", "domain": "postman.com", "enabled": false, "tags": ["devtools", "india"]},
     {"name": "Rubrik", "ats_type": "greenhouse", "board_token": "rubrik", "domain": "rubrik.com", "enabled": true, "tags": ["infra", "india"]},
     {"name": "Cloudflare", "ats_type": "greenhouse", "board_token": "cloudflare", "domain": "cloudflare.com", "enabled": false, "tags": ["infra"]},
     {"name": "Figma", "ats_type": "greenhouse", "board_token": "figma", "domain": "figma.com", "enabled": false, "tags": ["design"]},

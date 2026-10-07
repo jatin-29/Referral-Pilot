@@ -100,7 +100,7 @@ def test_harvest_runs_stepwise_between_requests(browser):
     assert not harvest_running()
     with session_scope() as session:
         jobs = session.exec(select(Job)).all()
-        assert {job.company for job in jobs} >= {"Stripe", "Postman", "Meesho"}
+        assert {job.company for job in jobs} >= {"Stripe", "Meesho"}
         assert all(job.match_score is not None for job in jobs)  # analysed after the harvest
         palantir = session.exec(select(Company).where(Company.name == "Palantir")).one()
         assert palantir.last_harvest_status.startswith("error")  # no demo fixture and no snapshot

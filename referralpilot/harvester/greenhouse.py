@@ -24,17 +24,20 @@ class GreenhouseHarvester(Harvester):
             location = (item.get("location") or {}).get("name")
             departments = [d.get("name") for d in item.get("departments") or [] if d.get("name")]
             job_id = str(item["id"])
+            title = item["title"].strip()
+            wanted = title_prefilter is None or title_prefilter(title)
             jobs.append(
                 RawJob(
                     company=target.name,
                     external_id=job_id,
-                    title=item["title"].strip(),
+                    title=title,
                     url=item.get("absolute_url") or f"https://boards.greenhouse.io/{token}/jobs/{job_id}",
                     ats_type=self.ats_type,
                     location=location,
                     department=", ".join(departments) or None,
                     employment_type=_metadata_value(item, "employment type"),
-                    description=html_to_text(item.get("content")),
+                    # The filter rejects other titles anyway: skip converting their HTML.
+                    description=html_to_text(item.get("content")) if wanted else "",
                     posted_at=parse_timestamp(item.get("first_published") or item.get("updated_at")),
                     company_domain=target.domain,
                 )

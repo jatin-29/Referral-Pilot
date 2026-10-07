@@ -50,6 +50,23 @@ def test_ashby_skips_unlisted_and_merges_locations(workspace):
     assert "Kotlin" in jobs[0].description
 
 
+@pytest.mark.parametrize("harvester, target", [
+    (GreenhouseHarvester, HarvestTarget("Stripe", "greenhouse", "stripe")),
+    (LeverHarvester, HarvestTarget("Meesho", "lever", "meesho")),
+    (AshbyHarvester, HarvestTarget("Ramp", "ashby", "ramp")),
+])
+def test_title_prefilter_only_skips_work(workspace, harvester, target):
+    """Postings whose titles the filter rejects keep no description; decisions are unchanged."""
+    job_filter = JobFilter.from_settings()
+    with demo_client() as client:
+        full = harvester(client).fetch(target)
+        quick = harvester(client).fetch(target, title_prefilter=job_filter.title_ok)
+    assert [j.external_id for j in full] == [j.external_id for j in quick]
+    assert [job_filter.evaluate(j) for j in full] == [job_filter.evaluate(j) for j in quick]
+    assert all(j.description == "" for j in quick if not job_filter.title_ok(j.title))
+    assert all(j.description for j in quick if job_filter.title_ok(j.title))
+
+
 def test_yc_listing_uses_embedded_json_and_fetches_details(workspace):
     with demo_client() as client:
         jobs = YCJobsHarvester(client).fetch(HarvestTarget("YC", "yc", "software-engineer"))

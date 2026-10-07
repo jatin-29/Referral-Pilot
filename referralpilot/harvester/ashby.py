@@ -27,17 +27,20 @@ class AshbyHarvester(Harvester):
             locations = [item.get("location")] + [
                 loc.get("location") for loc in item.get("secondaryLocations") or [] if isinstance(loc, dict)
             ]
+            title = item["title"].strip()
+            wanted = title_prefilter is None or title_prefilter(title)
             jobs.append(
                 RawJob(
                     company=target.name,
                     external_id=str(item["id"]),
-                    title=item["title"].strip(),
+                    title=title,
                     url=item.get("jobUrl") or f"https://jobs.ashbyhq.com/{token}/{item['id']}",
                     ats_type=self.ats_type,
                     location=" / ".join(loc for loc in locations if loc) or None,
                     department=item.get("department") or item.get("team"),
                     employment_type=item.get("employmentType"),
-                    description=item.get("descriptionPlain") or html_to_text(item.get("descriptionHtml")),
+                    description=(item.get("descriptionPlain") or html_to_text(item.get("descriptionHtml")))
+                    if wanted else "",  # other titles are filtered out anyway
                     posted_at=parse_timestamp(item.get("publishedAt")),
                     company_domain=target.domain,
                 )

@@ -29,17 +29,19 @@ class LeverHarvester(Harvester):
                 continue
             categories = item.get("categories") or {}
             location = categories.get("location") or ", ".join(categories.get("allLocations") or []) or None
+            title = item["text"].strip()
+            wanted = title_prefilter is None or title_prefilter(title)
             jobs.append(
                 RawJob(
                     company=target.name,
                     external_id=str(item["id"]),
-                    title=item["text"].strip(),
+                    title=title,
                     url=item.get("hostedUrl") or f"https://jobs.lever.co/{token}/{item['id']}",
                     ats_type=self.ats_type,
                     location=location,
                     department=categories.get("team") or categories.get("department"),
                     employment_type=categories.get("commitment"),
-                    description=_description(item),
+                    description=_description(item) if wanted else "",  # other titles are filtered out anyway
                     posted_at=parse_timestamp(item.get("createdAt")),
                     company_domain=target.domain,
                 )
