@@ -46,7 +46,9 @@
     const drawer = document.getElementById("drawer");
     if (drawer) drawer.innerHTML = "";
   };
-  document.addEventListener("closeModal", window.closeModal);
+  // Deferred: the element that triggered the request must stay attached until htmx has
+  // dispatched every event of the response.
+  document.addEventListener("closeModal", () => setTimeout(window.closeModal, 0));
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
     const modal = document.getElementById("modal");

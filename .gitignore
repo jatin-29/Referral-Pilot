@@ -27,3 +27,9 @@ secrets/*
 .idea/
 .vscode/
 .DS_Store
+
+# GitHub Pages build (scripts/build_web.py) and its smoke test
+site/
+.cache/
+node_modules/
+web-smoke/

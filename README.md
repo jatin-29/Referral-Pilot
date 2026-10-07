@@ -41,6 +41,44 @@ Then:
 3. Open a job card → **Compile tailored resume** → **Find contacts** → **Draft email** → review/edit → **Approve & queue**.
 4. Keep `EMAIL_BACKEND=dry_run` until the `.eml` files in `exports/outbox/` look right, then switch to `smtp` or `gmail_api`.
 
+## Use it in your browser (GitHub Pages)
+
+**https://jatin-29.github.io/Referral-Pilot/** — no install. The site is the same dashboard, with the
+same Python code, running *inside your browser tab* on [Pyodide](https://pyodide.org) (Python
+compiled to WebAssembly). The first visit downloads about 25 MB; later visits start from cache.
+
+| | Local install | Browser edition |
+|---|---|---|
+| Your data | `data/referralpilot.db` | the browser's storage (IndexedDB) — never uploaded; **Settings → Download backup** to move it |
+| Job discovery | APScheduler crawl every 6 h | a GitHub Action crawls every 6 h and publishes `jobs.json`; the tab also calls board APIs directly when a board allows browser requests |
+| Resumes | pdflatex → Typst → fpdf | pure-Python PDF in the browser, plus **Open in Overleaf** for the LaTeX version |
+| Contacts | Hunter, Apollo, Brave, Google CSE, DuckDuckGo | address-pattern guesses, Google CSE, MX checks over DNS-over-HTTPS; the other APIs block browsers unless you set a CORS relay in Settings |
+| Sending | dry run, SMTP, Gmail API | dry run, Gmail (OAuth sign-in in the page), or **Open in Gmail** + **Mark as sent** |
+| Background work | always on | only while the tab is open (keep it pinned on sending days); one tab at a time |
+
+The hard limits are identical: at most 20 emails per rolling 24 hours, 3–7 minutes apart, inside your
+send window, nothing sent without approval, opt-outs suppressed forever.
+
+**Publishing your own copy (one time):** in the repository go to *Settings → Pages → Build and
+deployment* and set *Source* to **GitHub Actions**, then run *Actions → GitHub Pages → Run workflow*.
+The workflow (`.github/workflows/pages.yml`) runs the tests, crawls every board in
+`config/companies.json`, builds the site, smoke-tests it in Chrome and deploys it — and repeats the
+crawl every 6 hours.
+
+**Sending real email from the browser (optional):** the page needs your own Google OAuth client.
+
+1. In [Google Cloud Console](https://console.cloud.google.com/) create a project and enable the **Gmail API**.
+2. *OAuth consent screen*: user type **External**, publishing status **Testing**, add your Gmail address
+   as a **test user** and the scopes `gmail.send` and `gmail.readonly` (reply detection).
+3. *Credentials → Create credentials → OAuth client ID → Web application*; under **Authorized
+   JavaScript origins** add `https://jatin-29.github.io` (your Pages origin, no path).
+4. In ReferralPilot open **Settings**: set *Sending mode* to `gmail_web`, paste the client ID, save, then
+   click **Connect Gmail**. Google warns that the app is unverified — expected for a personal test app.
+   The sign-in lasts about an hour; when it expires, queued emails wait until you click **Connect Gmail**.
+
+Build and serve the site locally: `python scripts/build_web.py --out site --jobs jobs.json` (after
+`referralpilot export-jobs --out jobs.json --all-companies`), then `python -m http.server -d site 8000`.
+
 ## The modules
 
 ### A. Job harvester — `referralpilot/harvester/`
@@ -156,14 +194,17 @@ referralpilot init | demo | harvest [--company X] [--offline] | jobs [--status S
 referralpilot tailor JOB_ID [--engine pdflatex|typst|fpdf] | prospect JOB_ID [--offline]
 referralpilot draft CONTACT_ID | approve OUTREACH_ID | queue | send-tick | followups
 referralpilot gmail-auth | engines | serve [--demo] [--no-scheduler] | verify [--live] [--keep]
+referralpilot export-jobs [--out jobs.json] [--all-companies]     # crawl → public postings snapshot
 ```
 
 ## Verification & tests
 
 ```bash
 python scripts/verify_pipeline.py      # same as `referralpilot verify`; add --live to try the real APIs
-pytest                                 # 106 tests: parsers, filters, scoring, LaTeX/Typst/fpdf builds,
-                                       # SMTP round-trip (aiosmtpd), queue limits, follow-ups, dashboard
+pytest                                 # 119 tests: parsers, filters, scoring, LaTeX/Typst/fpdf builds,
+                                       # SMTP round-trip (aiosmtpd), queue limits, follow-ups, dashboard,
+                                       # the browser runtime (web.py), snapshots, Gmail REST, XHR transport
+node scripts/web_smoke.cjs URL         # boots a built site in Chromium and walks the dashboard (CI runs it)
 ```
 
 The verifier runs in a throwaway workspace with a simulated clock and checks: crawling and filtering,
@@ -176,12 +217,15 @@ with opt-out and attachment, approval, a 3–7 minute gap, the 20-per-24h cap, a
 ```
 referralpilot/
   config.py  db.py  models.py  activity.py  seed.py  pipeline.py  scheduler.py  cli.py  verify.py
-  harvester/   greenhouse.py lever.py ashby.py yc.py filters.py service.py
+  web.py websettings.py backup.py   browser runtime (Pyodide), browser settings, backup/restore
+  harvester/   greenhouse.py lever.py ashby.py yc.py filters.py service.py snapshot.py
   tailor/      skills.py jd_parser.py matcher.py document.py render.py compiler.py service.py
   prospector/  domain.py patterns.py providers.py service.py
-  outreach/    composer.py senders.py gmail.py replies.py queue.py followups.py service.py
+  outreach/    composer.py senders.py gmail.py gmail_web.py replies.py queue.py followups.py service.py
   ui/          app.py routes.py views.py templates/ static/
   demo_data/   recorded-style API payloads used by tests, `verify` and `--demo`
+web/           GitHub Pages shell: index.html, bridge.js (page side), worker.js (Pyodide worker)
+scripts/       build_web.py (static site), web_smoke.cjs (browser smoke test), build_css.sh
 templates/     base_resume.tex (Jinja2 + LaTeX), base_resume.typ (Typst fallback)
 config/        candidate_profile.json, companies.json, filters.json
 exports/       tailored resumes + outbox/*.eml (git-ignored)

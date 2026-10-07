@@ -50,9 +50,10 @@ ERRORS = (PipelineError, TailorError, outreach.OutreachError, ValueError)
 # --- helpers -------------------------------------------------------------------------
 
 def _triggers(toast: str | None = None, kind: str = "success", events: tuple[str, ...] = ()) -> dict[str, str]:
-    payload: dict = {name: True for name in events}
-    if toast:
-        payload["toast"] = {"message": toast, "kind": kind}
+    # htmx fires these in order on the element that made the request; the toast goes first
+    # because "closeModal" can detach that element, and later events would never bubble up.
+    payload: dict = {"toast": {"message": toast, "kind": kind}} if toast else {}
+    payload.update({name: True for name in events})
     return {"HX-Trigger": json.dumps(payload)} if payload else {}
 
 

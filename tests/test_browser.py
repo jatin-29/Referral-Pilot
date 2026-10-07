@@ -191,6 +191,9 @@ def test_manual_send_counts_toward_the_daily_limit(browser, monkeypatch):
         item = session.get(OutreachLog, draft.id)
         assert item.status == OutreachStatus.SENT and item.dry_run is False and item.sent_at is not None
         assert session.get(ReferralContact, contact_id).status == "contacted"
+        from referralpilot.runtime import get_queue
+
+        assert get_queue().status(session).sent_24h == 1  # real sends count in dry-run mode too
 
     monkeypatch.setenv("DAILY_SEND_LIMIT", "1")
     from referralpilot.config import reset_settings

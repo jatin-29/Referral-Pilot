@@ -1,0 +1,129 @@
+name: GitHub Pages
+
+# Publishes the browser edition of ReferralPilot: the same dashboard, running entirely in the
+# visitor's browser (Python on WebAssembly). Scheduled runs re-crawl the job boards every
+# 6 hours and republish jobs.json, so the site always has fresh postings.
+#
+# One-time setup: Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+
+on:
+  push:
+    branches: [main, master, claude/trusting-curie-4fbtjv]
+    paths-ignore: ["**.md"]
+  schedule:
+    - cron: "23 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      pages_enabled: ${{ steps.pages.outputs.enabled }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install ReferralPilot
+        run: pip install -e ".[dev]"
+
+      - name: Run the tests
+        if: github.event_name != 'schedule'
+        run: pytest -q
+
+      - name: Crawl the job boards
+        # Public postings only. A board that fails is simply missing from this snapshot.
+        continue-on-error: true
+        env:
+          DATA_DIR: ${{ runner.temp }}/crawl/data
+          EXPORTS_DIR: ${{ runner.temp }}/crawl/exports
+          INCLUDE_INTERNSHIPS: "true"
+          MAX_REQUIRED_YEARS: "3"
+          VERIFY_MX: "false"
+        run: referralpilot export-jobs --all-companies --out "$RUNNER_TEMP/jobs.json"
+
+      - name: Cache Pyodide downloads
+        uses: actions/cache@v4
+        with:
+          path: .cache/web-build
+          key: web-build-${{ hashFiles('scripts/build_web.py') }}
+
+      - name: Build the site
+        run: python scripts/build_web.py --out site --jobs "$RUNNER_TEMP/jobs.json"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Smoke-test the site in Chrome
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+          PW_CHANNEL: chrome
+        run: |
+          npm install --no-save --no-package-lock playwright@1
+          repo="${GITHUB_REPOSITORY#*/}"
+          mkdir -p "$RUNNER_TEMP/www"
+          ln -s "$PWD/site" "$RUNNER_TEMP/www/$repo"
+          python -m http.server 8000 --bind 127.0.0.1 --directory "$RUNNER_TEMP/www" > /dev/null 2>&1 &
+          sleep 1
+          node scripts/web_smoke.cjs "http://127.0.0.1:8000/$repo/" --out web-smoke
+
+      - name: Keep the smoke-test screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-smoke
+          path: web-smoke
+          if-no-files-found: ignore
+
+      - name: Check that GitHub Pages is enabled
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$GITHUB_REPOSITORY/pages")
+          if [ "$code" = "200" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=GitHub Pages is not enabled::Open Settings -> Pages, set Source to 'GitHub Actions', then re-run this workflow."
+            {
+              echo "### The site was built but not published"
+              echo "GitHub Pages is not enabled for this repository yet. Open **Settings → Pages → Build and deployment**,"
+              echo "set **Source** to **GitHub Actions**, then re-run this workflow (Actions tab → GitHub Pages → Run workflow)."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/configure-pages@v5
+        if: steps.pages.outputs.enabled == 'true'
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.pages.outputs.enabled == 'true'
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.pages_enabled == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

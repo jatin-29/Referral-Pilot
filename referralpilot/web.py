@@ -127,7 +127,12 @@ async def handle(method: str, url: str, headers: Any = (), body: Any = None) -> 
         "server": (HOST, 443),
         "state": {},
     }
-    request_body = bytes(body) if body is not None else b""
+    if body is None or not body:  # also JavaScript null
+        request_body = b""
+    elif hasattr(body, "to_bytes"):  # a JavaScript Uint8Array from the worker
+        request_body = body.to_bytes()
+    else:
+        request_body = bytes(body)
     response: dict[str, Any] = {"status": 500, "headers": [], "chunks": []}
     finished = asyncio.Event()
     delivered = False

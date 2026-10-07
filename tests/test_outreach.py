@@ -284,6 +284,25 @@ def test_daily_cap_of_20_per_rolling_24h(workspace, make_item):
     assert sum(status_of(i) == OutreachStatus.SENT for i in ids) == 21
 
 
+def test_real_sends_always_count_but_simulated_ones_never_block_real_sending(workspace, make_item):
+    clock = Clock()
+    real, simulated = make_item(company="Real"), make_item(company="Sim")
+    with session_scope() as session:
+        for item_id, dry in ((real, False), (simulated, True)):
+            item = session.get(OutreachLog, item_id)
+            item.status, item.sent_at, item.dry_run = OutreachStatus.SENT, START - timedelta(hours=1), dry
+            session.add(item)
+    with session_scope() as session:
+        assert make_queue(clock, workspace).status(session).sent_24h == 2  # dry run: everything counts
+
+    class LiveSender(DryRunSender):
+        dry_run = False
+
+    with session_scope() as session:
+        live = make_queue(clock, workspace, sender=LiveSender(workspace.outbox_dir))
+        assert live.status(session).sent_24h == 1  # live: only the real email
+
+
 def test_random_delay_between_sends(workspace, make_item):
     clock = Clock()
     for i in range(6):

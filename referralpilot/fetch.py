@@ -36,6 +36,7 @@ _FORBIDDEN_REQUEST_HEADERS = {
 }
 # Hosts that must never be relayed through a third-party CORS proxy (they send CORS headers anyway).
 _NEVER_PROXY = ("googleapis.com", "google.com", "dns.google")
+BLOCKED_MESSAGE = "the browser blocked the request (the site does not allow it, or you are offline)"
 
 
 class BrowserTransport(httpx.BaseTransport):
@@ -88,11 +89,9 @@ class BrowserTransport(httpx.BaseTransport):
         try:
             xhr.send(payload)
         except Exception as exc:  # pyodide.ffi.JsException: NetworkError / TimeoutError
-            raise BlockedRequestError(f"{request.method} {url}: the browser blocked the request "
-                                      f"(no CORS access or offline)", request=request) from exc
+            raise BlockedRequestError(BLOCKED_MESSAGE, request=request) from exc
         if xhr.status == 0:
-            raise BlockedRequestError(f"{request.method} {url}: the browser blocked the request "
-                                      f"(no CORS access or offline)", request=request)
+            raise BlockedRequestError(BLOCKED_MESSAGE, request=request)
         headers = []
         for line in str(xhr.getAllResponseHeaders() or "").split("\r\n"):
             name, sep, value = line.partition(":")

@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import func, update
+from sqlalchemy import func, true, update
 from sqlmodel import Session, col, select
 
 from ..activity import get_logger
@@ -142,13 +142,19 @@ def set_paused(session: Session, paused: bool, reason: str | None = None) -> Non
     log.info("Outreach %s%s", "paused" if paused else "resumed", f": {reason}" if paused and reason else "")
 
 
+def _counted(dry_run: bool):
+    """Which sends count toward the limits: real ones always; simulated ones only in dry-run
+    mode (a dry run must not use up the real day's allowance)."""
+    return true() if dry_run else OutreachLog.dry_run == False  # noqa: E712
+
+
 def sent_times(session: Session, now: datetime, dry_run: bool) -> list[datetime]:
     """Send timestamps inside the rolling 24-hour window (initials and follow-ups)."""
     rows = session.exec(
         select(OutreachLog.sent_at).where(
             OutreachLog.status == OutreachStatus.SENT,
             OutreachLog.sent_at > now - timedelta(hours=24),
-            OutreachLog.dry_run == dry_run,
+            _counted(dry_run),
         )
     ).all()
     return sorted(row for row in rows if row is not None)
@@ -160,7 +166,7 @@ def _company_sent_today(session: Session, company: str, now: datetime, dry_run: 
             Job.company == company,
             OutreachLog.status == OutreachStatus.SENT,
             OutreachLog.sent_at > now - timedelta(hours=24),
-            OutreachLog.dry_run == dry_run,
+            _counted(dry_run),
         )
     ).one()
 
