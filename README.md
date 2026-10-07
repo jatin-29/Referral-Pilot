@@ -45,7 +45,7 @@ Then:
 
 **https://jatin-29.github.io/Referral-Pilot/** — no install. The site is the same dashboard, with the
 same Python code, running *inside your browser tab* on [Pyodide](https://pyodide.org) (Python
-compiled to WebAssembly). The first visit downloads about 25 MB; later visits start from cache.
+compiled to WebAssembly). The first visit downloads up to about 20 MB; later visits start from cache.
 
 | | Local install | Browser edition |
 |---|---|---|
