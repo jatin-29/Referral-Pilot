@@ -1,0 +1,156 @@
+%# ============================================================================
+%# ReferralPilot base resume (Jinja2-templated LaTeX).
+%#
+%#   \VAR{expr}       print a value          filters: tex (escape), url, rich, items
+%#   %% statement     Jinja line statement   (for / if / macro ...)
+%#   %# comment       template-only comment  (stripped from the output)
+%#
+%# Each section is a macro below; `doc.sections` decides which ones render and
+%# in what order, so sections can be reordered or dropped without editing them.
+%# Only packages from a minimal TeX Live (latex-base/recommended + psnfss) are
+%# required; lmodern and enumitem are used when installed.
+%# ============================================================================
+\documentclass[10pt,\VAR{paper}]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\IfFileExists{lmodern.sty}{\usepackage{lmodern}}{\IfFileExists{mathptmx.sty}{\usepackage{mathptmx}}{}}
+\usepackage[margin=0.55in,top=0.45in,bottom=0.45in]{geometry}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+  pdftitle={\VAR{doc.name|tex} - Resume},
+  pdfauthor={\VAR{doc.name|tex}},
+  pdfsubject={\VAR{doc.target_role|tex} at \VAR{doc.target_company|tex}},
+  pdfkeywords={\VAR{doc.keywords|join(", ")|tex}},
+}
+% Make the PDF text layer machine-readable for applicant tracking systems.
+\ifdefined\pdfgentounicode
+  \IfFileExists{glyphtounicode.tex}{\input{glyphtounicode}\pdfgentounicode=1}{}
+\fi
+
+\definecolor{rpaccent}{HTML}{1F3A5F}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\tabcolsep}{0pt}
+\urlstyle{same}
+
+\IfFileExists{enumitem.sty}{%
+  \usepackage{enumitem}%
+  \newenvironment{rpitems}%
+    {\begin{itemize}[leftmargin=1.3em,itemsep=0.5pt,topsep=1pt,parsep=0pt,partopsep=0pt]\small}%
+    {\end{itemize}}%
+}{%
+  \newenvironment{rpitems}%
+    {\vspace{-5pt}\begin{itemize}\setlength{\itemsep}{0.5pt}\setlength{\parskip}{0pt}\small}%
+    {\end{itemize}\vspace{-4pt}}%
+}
+
+\newcommand{\rpsection}[1]{%
+  \vspace{6pt}{\color{rpaccent}\large\bfseries\MakeUppercase{#1}}\par\vspace{-2pt}%
+  {\color{rpaccent}\rule{\linewidth}{0.6pt}}\par\vspace{2pt}%
+}
+\newcommand{\rpheading}[2]{\textbf{#1}\hfill{\small #2}\par}
+
+%# ---------------------------------------------------------------- sections ---
+%% macro summary()
+\rpsection{Summary}
+{\small \VAR{doc.summary|rich}}\par
+%% endmacro
+
+%% macro education()
+\rpsection{Education}
+%% for edu in doc.education
+\rpheading{\VAR{edu.institution|tex}}{\VAR{edu.dates|tex}}
+{\small\textit{\VAR{edu.degree|tex}}%
+%% if edu.score
+\ \textbar{} \VAR{edu.score|tex}%
+%% endif
+\hfill\textit{\VAR{edu.location|tex}}}\par
+%% if edu.coursework
+{\small Relevant coursework: \VAR{edu.coursework|items}}\par
+%% endif
+\vspace{2pt}
+%% endfor
+%% endmacro
+
+%% macro skills()
+\rpsection{Technical Skills}
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{0.17\linewidth}>{\raggedright\arraybackslash}X@{}}
+%% for category, values in doc.skills
+\VAR{category|tex} & \VAR{values|items} \\[1pt]
+%% endfor
+\end{tabularx}}
+%% endmacro
+
+%% macro experience()
+\rpsection{Experience}
+%% for job in doc.experience
+\rpheading{\VAR{job.role|tex} \textnormal{\textbar{} \VAR{job.company|tex}%
+%% if job.location
+, \VAR{job.location|tex}%
+%% endif
+}}{\VAR{job.dates|tex}}
+\begin{rpitems}
+%% for bullet in job.bullets
+  \item \VAR{bullet|rich}
+%% endfor
+\end{rpitems}
+\vspace{2pt}
+%% endfor
+%% endmacro
+
+%% macro projects()
+\rpsection{Projects}
+%% for project in doc.projects
+\textbf{\VAR{project.name|tex}} {\small\textbar{} \VAR{project.tech|items}}%
+%% if project.link
+\hfill{\small\href{\VAR{project.link|url}}{\VAR{project.link_label|tex}}}%
+%% endif
+\par
+\begin{rpitems}
+%% for bullet in project.bullets
+  \item \VAR{bullet|rich}
+%% endfor
+\end{rpitems}
+\vspace{2pt}
+%% endfor
+%% endmacro
+
+%% macro achievements()
+\rpsection{Achievements}
+\begin{rpitems}
+%% for item in doc.achievements
+  \item \VAR{item|rich}
+%% endfor
+\end{rpitems}
+%% endmacro
+
+%# ---------------------------------------------------------------- document ---
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries \VAR{doc.name|tex}}\par\vspace{3pt}
+  {\small
+%% for text, url in doc.contact
+%% if url
+  \href{\VAR{url|url}}{\VAR{text|tex}}%
+%% else
+  \VAR{text|tex}%
+%% endif
+%% if not loop.last
+  \enspace\textbar\enspace
+%% endif
+%% endfor
+  }
+\end{center}
+\vspace{-6pt}
+
+%% set renderers = {"summary": summary, "education": education, "skills": skills, "experience": experience, "projects": projects, "achievements": achievements}
+%% for section in doc.sections
+\VAR{renderers[section]()}
+%% endfor
+
+\end{document}

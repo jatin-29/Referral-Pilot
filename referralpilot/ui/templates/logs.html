@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Activity · ReferralPilot{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-7xl px-6 py-6">
+  <div class="flex flex-wrap items-end justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-900">Activity log</h1>
+      <p class="mt-1 text-sm text-slate-500">Scheduler, scraper, tailor, prospector and outreach events - streamed live.</p>
+    </div>
+    <form method="get" class="flex items-center gap-2 text-sm">
+      <select name="source" class="input w-44" onchange="this.form.submit()">
+        <option value="">All sources</option>
+        {% for s in sources %}<option value="{{ s }}" {% if s == source %}selected{% endif %}>{{ s }}</option>{% endfor %}
+      </select>
+    </form>
+  </div>
+
+  {% if jobs %}
+  <div class="mt-4 grid grid-cols-1 gap-2 md:grid-cols-5">
+    {% for job in jobs %}
+    <div class="rounded-lg border border-slate-200 bg-white px-3 py-2">
+      <p class="text-xs font-medium text-slate-700">{{ job.name }}</p>
+      <p class="text-xs text-slate-500">next {{ job.next_run|ago if job.next_run else 'paused' }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div id="live-log" class="live-log mt-4 h-[65vh] overflow-y-auto rounded-xl bg-slate-900 px-4 py-3 font-mono text-[12px] leading-5 text-slate-100"
+       data-backlog="0" data-source="{{ source or '' }}">
+    {% for row in rows %}
+    <div class="log-line log-{{ row.level|lower }}"><span class="log-time">{{ row.created_at|dt('%d %b %H:%M:%S') }}</span><span class="log-src">{{ row.source }}</span><span class="log-msg">{{ row.message }}</span></div>
+    {% endfor %}
+  </div>
+  <p class="mt-2 text-xs text-slate-400">Showing the latest {{ rows|length }} entries; new events appear at the bottom.</p>
+</div>
+<script>window.LOG_AFTER_ID = {{ rows[-1].id if rows else 0 }};</script>
+{% endblock %}

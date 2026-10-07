@@ -1,0 +1,234 @@
+{% set statuses = [('discovered', 'Discovered'), ('tailored', 'Matched / Tailored'), ('queued', 'Outreach queued'), ('contacted', 'Contacted'), ('followup_sent', 'Follow-up sent'), ('replied', 'Replied'), ('referred', 'Referred'), ('archived', 'Archived')] %}
+<div class="fixed inset-0 z-40 flex justify-end" id="drawer-root"
+     hx-get="/jobs/{{ job.id }}" hx-trigger="refreshDrawer from:body" hx-target="#drawer" hx-swap="innerHTML">
+  <div class="absolute inset-0 bg-slate-900/30" onclick="closeDrawer()"></div>
+  <aside class="relative flex h-full w-full max-w-3xl flex-col bg-white shadow-2xl">
+    <!-- header -->
+    <header class="border-b border-slate-200 px-6 py-4">
+      <div class="flex items-start gap-4">
+        <div class="min-w-0 flex-1">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            {{ job.company }} · {{ job.ats_type }}{% if job.department %} · {{ job.department }}{% endif %}
+          </p>
+          <h2 class="mt-1 text-xl font-semibold text-slate-900">{{ job.title }}</h2>
+          <p class="mt-1 text-sm text-slate-500">
+            {{ job.location or 'Location n/a' }} · discovered {{ job.discovered_at|ago }}
+            {% if job.posted_at %} · posted {{ job.posted_at|dt('%d %b %Y') }}{% endif %}
+            {% if job.min_years_required is not none %} · asks for {{ job.min_years_required }}+ yrs{% endif %}
+          </p>
+          {% if stale %}<p class="mt-1 text-xs font-medium text-amber-700">This posting was not on the board during the last harvest - it may be closed.</p>{% endif %}
+        </div>
+        <button type="button" class="btn btn-ghost" onclick="closeDrawer()" aria-label="Close">
+          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <a href="{{ job.url }}" target="_blank" rel="noopener" class="btn btn-sm">Open posting ↗</a>
+        <select name="status" class="input input-sm w-48" hx-post="/jobs/{{ job.id }}/status" hx-trigger="change" hx-swap="none">
+          {% for value, text in statuses %}<option value="{{ value }}" {% if job.status == value %}selected{% endif %}>{{ text }}</option>{% endfor %}
+        </select>
+      </div>
+    </header>
+
+    <div class="flex-1 space-y-6 overflow-y-auto px-6 py-5">
+      <!-- match -->
+      <section class="rounded-xl border border-slate-200 p-4">
+        <div class="flex items-center gap-5">
+          <div class="score-ring {{ job.match_score|score_class }}">
+            <span class="text-2xl font-bold">{{ '%.0f'|format(job.match_score) if job.match_score is not none else '—' }}</span>
+            <span class="text-[10px] font-semibold uppercase tracking-wide opacity-70">ATS match</span>
+          </div>
+          <div class="grid flex-1 grid-cols-2 gap-x-6 gap-y-2 text-xs">
+            {% for key, text, weight in [('coverage', 'Skill coverage', '60%'), ('evidence', 'Backed by projects', '15%'), ('title_fit', 'Role fit', '15%'), ('experience_fit', 'Experience fit', '10%')] %}
+            {% set value = breakdown.get(key) %}
+            <div>
+              <div class="flex justify-between text-slate-500"><span>{{ text }} <span class="text-slate-400">({{ weight }})</span></span><span class="font-medium text-slate-700">{{ ('%.0f'|format(value * 100)) ~ '%' if value is not none else '—' }}</span></div>
+              <div class="mt-1 h-1.5 rounded-full bg-slate-100"><div class="h-1.5 rounded-full bg-indigo-500" style="width: {{ (value or 0) * 100 }}%"></div></div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% if job.matched_skills or job.missing_skills %}
+        <div class="mt-4 space-y-2">
+          {% if job.matched_skills %}
+          <div class="flex flex-wrap gap-1.5"><span class="mr-1 text-xs font-medium text-slate-500">Matched</span>
+            {% for skill in job.matched_skills %}<span class="chip bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">{{ skill }}</span>{% endfor %}
+          </div>
+          {% endif %}
+          {% if job.missing_skills %}
+          <div class="flex flex-wrap gap-1.5"><span class="mr-1 text-xs font-medium text-slate-500">Gaps</span>
+            {% for skill in job.missing_skills %}<span class="chip bg-amber-50 text-amber-700 ring-1 ring-amber-200">{{ skill }}</span>{% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% elif job.match_score is none %}
+        <p class="mt-3 text-sm text-slate-500">Not scored yet - compile the resume to analyse this job description.</p>
+        {% endif %}
+      </section>
+
+      <!-- resume -->
+      <section>
+        <div class="flex items-center justify-between">
+          <h3 class="section-title">Tailored resume</h3>
+          <button class="btn btn-primary btn-sm" hx-post="/jobs/{{ job.id }}/tailor" hx-target="#drawer" hx-swap="innerHTML"
+                  hx-indicator="#tailor-spin" hx-disabled-elt="this">
+            <svg id="tailor-spin" viewBox="0 0 24 24" class="htmx-indicator h-3.5 w-3.5 animate-spin" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-9-9"/></svg>
+            {{ 'Re-compile' if has_pdf else 'Compile tailored resume' }}
+          </button>
+        </div>
+        {% if has_pdf %}
+        <div class="mt-2 flex flex-wrap items-center gap-3 rounded-lg bg-slate-50 px-3 py-2 text-sm">
+          <span class="font-medium text-slate-700">{{ job.resume_pdf_path|basename }}</span>
+          <span class="text-xs text-slate-500">{{ job.resume_engine }} · {{ job.tailored_at|ago }}</span>
+          <span class="ml-auto flex gap-2">
+            <a class="link" href="/jobs/{{ job.id }}/resume.pdf" target="_blank" rel="noopener">View PDF</a>
+            {% if has_tex %}<a class="link" href="/jobs/{{ job.id }}/resume.tex" target="_blank" rel="noopener">LaTeX source</a>{% endif %}
+          </span>
+        </div>
+        {% if ranked_projects %}
+        <p class="mt-2 text-xs text-slate-500">Projects ranked for this JD:
+          {% for p in ranked_projects %}<span class="font-medium text-slate-700">{{ p.name }}</span> ({{ p.score }}){{ ', ' if not loop.last }}{% endfor %}
+        </p>
+        {% endif %}
+        {% else %}
+        <p class="mt-2 text-sm text-slate-500">One click renders <code>templates/base_resume.tex</code> with skills and projects re-ranked for this job and compiles it (pdflatex → Typst → pure-Python fallback).</p>
+        {% endif %}
+      </section>
+
+      <!-- contacts -->
+      <section>
+        <div class="flex items-center justify-between">
+          <h3 class="section-title">Referral contacts
+            <span class="text-slate-400">· {{ job.domain or 'domain unknown' }}</span>
+            {% if job.domain_source in ['guess', 'dns_guess'] %}<span class="chip ml-1 bg-amber-50 text-amber-700 ring-1 ring-amber-200" title="Add the real domain on the Companies page">domain guessed - verify</span>{% endif %}
+          </h3>
+          <button class="btn btn-sm" hx-post="/jobs/{{ job.id }}/prospect" hx-target="#drawer" hx-swap="innerHTML"
+                  hx-indicator="#prospect-spin" hx-disabled-elt="this">
+            <svg id="prospect-spin" viewBox="0 0 24 24" class="htmx-indicator h-3.5 w-3.5 animate-spin" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-9-9"/></svg>
+            Find contacts
+          </button>
+        </div>
+        {% if contacts %}
+        <ul class="mt-3 space-y-2">
+          {% for c in contacts %}
+          {% set email = latest_initial.get(c.id) %}
+          <li class="rounded-lg border border-slate-200 p-3">
+            <div class="flex items-start gap-3">
+              <div class="min-w-0 flex-1">
+                <p class="flex flex-wrap items-center gap-1.5 font-medium text-slate-900">
+                  {{ c.name }}
+                  {% if c.is_alumni %}<span class="chip bg-amber-50 text-amber-700 ring-1 ring-amber-200">Alumni</span>{% endif %}
+                  {% if c.linkedin_url %}<a class="link text-xs font-normal" href="{{ c.linkedin_url }}" target="_blank" rel="noopener">LinkedIn ↗</a>{% endif %}
+                </p>
+                <p class="text-xs text-slate-500">{{ c.role or 'Role unknown' }} · via {{ c.source }} · priority {{ c.priority_score }}</p>
+                <p class="mt-1 flex flex-wrap items-center gap-1.5 text-sm text-slate-700">
+                  {{ c.email or 'No email yet' }}
+                  {% if c.email %}<span class="chip {{ 'bg-emerald-50 text-emerald-700' if c.email_confidence >= 0.8 else 'bg-slate-100 text-slate-600' }}" title="Email confidence">{{ (c.email_confidence * 100)|round|int }}% · {{ c.email_source }}</span>{% endif %}
+                </p>
+                {% if c.alternate_emails and c.status in ['new', 'drafted'] %}
+                <form class="mt-1.5 flex items-center gap-1.5" hx-post="/contacts/{{ c.id }}/email" hx-target="#drawer" hx-swap="innerHTML">
+                  <select name="email" class="input input-sm w-64">
+                    {% for alt in c.alternate_emails %}<option>{{ alt }}</option>{% endfor %}
+                  </select>
+                  <button class="btn btn-sm btn-ghost">Use this address</button>
+                </form>
+                {% endif %}
+              </div>
+              <div class="flex shrink-0 flex-col items-end gap-1.5">
+                <span class="badge {{ c.status|status_class }}">{{ c.status|label }}</span>
+                {% if c.status not in ['opted_out', 'bounced'] %}
+                  {% if email and email.status in ['draft', 'queued', 'failed'] %}
+                  <button class="btn btn-sm {{ 'btn-primary' if email.status == 'draft' else '' }}" hx-get="/outreach/{{ email.id }}/edit" hx-target="#modal">
+                    {{ 'Review draft' if email.status == 'draft' else ('Edit queued email' if email.status == 'queued' else 'Fix failed email') }}
+                  </button>
+                  {% elif not email and c.email %}
+                  <button class="btn btn-sm btn-primary" hx-post="/contacts/{{ c.id }}/draft" hx-target="#modal">Draft email</button>
+                  {% endif %}
+                {% endif %}
+                <div class="flex gap-1 text-[11px]">
+                  {% if c.status not in ['replied', 'referred', 'opted_out', 'bounced'] %}
+                  <button class="link" hx-post="/contacts/{{ c.id }}/replied" hx-target="#drawer">Replied</button>
+                  {% endif %}
+                  {% if c.status != 'referred' and c.status not in ['opted_out', 'bounced'] %}
+                  <button class="link" hx-post="/contacts/{{ c.id }}/referred" hx-target="#drawer">Referred</button>
+                  {% endif %}
+                  {% if c.status not in ['opted_out'] %}
+                  <button class="link text-rose-600" hx-post="/contacts/{{ c.id }}/opt-out" hx-target="#drawer" hx-confirm="Suppress {{ c.email or c.name }} permanently?">Opt-out</button>
+                  {% endif %}
+                  <button class="link text-slate-400" hx-post="/contacts/{{ c.id }}/delete" hx-target="#drawer" hx-confirm="Remove {{ c.name }}?">Remove</button>
+                </div>
+              </div>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="mt-2 text-sm text-slate-500">No contacts yet. "Find contacts" runs the configured providers (Hunter, Apollo, Brave, Google CSE, DuckDuckGo); without API keys use the search links below and add people by hand - emails are guessed from the company's address pattern.</p>
+        {% endif %}
+
+        <details class="mt-3 rounded-lg border border-slate-200 px-3 py-2">
+          <summary class="cursor-pointer text-sm font-medium text-slate-700">Add a contact manually</summary>
+          <form class="mt-3 grid grid-cols-2 gap-2" hx-post="/jobs/{{ job.id }}/contacts" hx-target="#drawer" hx-swap="innerHTML">
+            <input class="input" name="name" placeholder="Full name *" required>
+            <input class="input" name="role" placeholder="Role (e.g. SDE 1)">
+            <input class="input" name="email" type="email" placeholder="Email (leave blank to guess)">
+            <input class="input" name="linkedin_url" placeholder="LinkedIn URL">
+            <div class="col-span-2 flex justify-end"><button class="btn btn-primary btn-sm">Add contact</button></div>
+          </form>
+        </details>
+        <details class="mt-2 rounded-lg border border-slate-200 px-3 py-2">
+          <summary class="cursor-pointer text-sm font-medium text-slate-700">OSINT search links</summary>
+          <ul class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+            {% for link in links %}<li><a class="link" href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }} · {{ link.engine }} ↗</a></li>{% endfor %}
+          </ul>
+        </details>
+      </section>
+
+      <!-- emails -->
+      <section>
+        <h3 class="section-title">Emails</h3>
+        {% if emails %}
+        <ul class="mt-2 divide-y divide-slate-100 rounded-lg border border-slate-200 text-sm">
+          {% for e in emails %}
+          <li class="flex items-center gap-3 px-3 py-2">
+            <span class="badge {{ e.status|status_class }}">{{ e.status|label }}</span>
+            <span class="chip bg-slate-100 text-slate-600">{{ e.type }}</span>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-slate-800">{{ e.subject }}</p>
+              <p class="truncate text-xs text-slate-500">to {{ contact_names.get(e.contact_id, '?') }} &lt;{{ e.to_email }}&gt;
+                {% if e.sent_at %} · sent {{ e.sent_at|ago }}{% if e.dry_run %} (dry run){% endif %}{% elif e.queued_at %} · queued {{ e.queued_at|ago }}{% endif %}
+                {% if e.replied %} · <span class="font-medium text-emerald-700">replied</span>{% endif %}
+                {% if e.error %} · <span class="text-rose-600">{{ e.error }}</span>{% endif %}
+              </p>
+            </div>
+            <div class="flex gap-2 text-xs">
+              {% if e.status in ['draft', 'queued', 'failed'] %}<button class="link" hx-get="/outreach/{{ e.id }}/edit" hx-target="#modal">Edit</button>{% endif %}
+              {% if e.status == 'draft' %}<button class="link" hx-post="/outreach/{{ e.id }}/approve" hx-swap="none">Approve</button>{% endif %}
+              {% if e.status in ['draft', 'queued', 'failed'] %}<button class="link text-rose-600" hx-post="/outreach/{{ e.id }}/cancel" hx-swap="none">Cancel</button>{% endif %}
+              {% if e.status == 'sent' %}<button class="link" hx-get="/outreach/{{ e.id }}/edit" hx-target="#modal">View</button>{% endif %}
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="mt-2 text-sm text-slate-500">No emails yet.</p>
+        {% endif %}
+      </section>
+
+      <!-- notes -->
+      <section>
+        <h3 class="section-title">Notes</h3>
+        <textarea class="input mt-2 h-20" name="notes" placeholder="Private notes - interview dates, who referred you, ..."
+                  hx-post="/jobs/{{ job.id }}/notes" hx-trigger="change, keyup changed delay:1500ms" hx-swap="none">{{ job.notes or '' }}</textarea>
+      </section>
+
+      <!-- description -->
+      <section>
+        <details>
+          <summary class="section-title cursor-pointer">Job description</summary>
+          <div class="mt-2 whitespace-pre-wrap rounded-lg bg-slate-50 p-4 text-sm leading-relaxed text-slate-700">{{ job.description or 'No description captured.' }}</div>
+        </details>
+      </section>
+    </div>
+  </aside>
+</div>

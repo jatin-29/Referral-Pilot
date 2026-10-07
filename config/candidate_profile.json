@@ -1,0 +1,116 @@
+{
+  "_note": "Sample profile used for seeding. Replace it with your own details (or edit it on the dashboard's Profile page).",
+  "full_name": "Aarav Mehta",
+  "email": "aarav.mehta.dev@example.com",
+  "phone": "+91 98765 43210",
+  "location": "New Delhi, India",
+  "headline": "final-year B.Tech CSE student focused on backend and distributed systems",
+  "summary": "Backend-leaning software engineer who enjoys designing reliable APIs, data pipelines and distributed systems.",
+  "graduation_year": 2025,
+  "target_roles": ["backend", "fullstack"],
+  "skills": {
+    "Languages": ["C++", "Python", "Java", "Go", "TypeScript", "JavaScript", "SQL"],
+    "Frameworks": ["React", "Node.js", "Express", "Spring Boot", "FastAPI", "Django", "Next.js"],
+    "Systems": ["PostgreSQL", "MongoDB", "Redis", "Kafka", "Docker", "Kubernetes", "AWS", "Git", "Linux", "gRPC", "CI/CD"]
+  },
+  "projects": [
+    {
+      "name": "DistKV",
+      "summary": "a Raft-replicated key-value store in Go that keeps serving through leader failures",
+      "tech": ["Go", "gRPC", "Raft", "Docker", "Distributed Systems"],
+      "link": "https://github.com/example/distkv",
+      "bullets": [
+        "Implemented Raft leader election and log replication in Go with a gRPC transport, sustaining 12k writes/s on a 5-node cluster.",
+        "Added snapshotting and log compaction, cutting recovery time after node restarts by 70%.",
+        "Built a fault-injection test harness in Docker to verify linearizability under network partitions."
+      ]
+    },
+    {
+      "name": "QuickCart",
+      "summary": "an event-driven e-commerce backend in Spring Boot with Kafka, PostgreSQL and Redis",
+      "tech": ["Java", "Spring Boot", "PostgreSQL", "Kafka", "Redis", "Docker", "Kubernetes", "AWS", "Microservices"],
+      "link": "https://github.com/example/quickcart",
+      "bullets": [
+        "Designed 6 Spring Boot microservices that communicate over Kafka, handling 3k orders/min in load tests.",
+        "Introduced Redis caching for catalog reads, reducing p95 latency from 180 ms to 35 ms.",
+        "Deployed to AWS EKS with Kubernetes autoscaling and GitHub Actions CI/CD pipelines."
+      ]
+    },
+    {
+      "name": "DevBoard",
+      "summary": "a real-time collaborative Kanban app built with React, Node.js, WebSockets and MongoDB",
+      "tech": ["TypeScript", "React", "Node.js", "Express", "WebSockets", "MongoDB", "Redis"],
+      "link": "https://github.com/example/devboard",
+      "bullets": [
+        "Built a React + TypeScript front end with optimistic updates and offline support for 500+ beta users.",
+        "Implemented WebSocket presence and board sync on Node.js/Express backed by MongoDB.",
+        "Scaled socket fan-out horizontally with Redis pub/sub."
+      ]
+    },
+    {
+      "name": "RateGuard",
+      "summary": "a distributed rate-limiting service in Python/FastAPI built on Redis Lua scripts",
+      "tech": ["Python", "FastAPI", "Redis", "Docker", "Prometheus", "REST APIs"],
+      "link": "https://github.com/example/rateguard",
+      "bullets": [
+        "Built token-bucket and sliding-window limiters as atomic Redis Lua scripts behind a FastAPI REST API.",
+        "Benchmarked 25k decisions/s with p99 latency under 4 ms; exported Prometheus metrics for dashboards.",
+        "Reached 90%+ test coverage with pytest unit and integration tests running in Docker Compose."
+      ]
+    },
+    {
+      "name": "PaperLens",
+      "summary": "a semantic search engine for research papers using PyTorch embeddings and FAISS",
+      "tech": ["Python", "PyTorch", "Machine Learning", "Flask", "React"],
+      "link": "https://github.com/example/paperlens",
+      "bullets": [
+        "Indexed 200k arXiv abstracts with sentence embeddings and FAISS for sub-50 ms semantic search.",
+        "Served results through a Flask API and a React UI with filters and citation graphs."
+      ]
+    },
+    {
+      "name": "LeetTrack",
+      "summary": "a Next.js dashboard that tracks competitive-programming progress across platforms",
+      "tech": ["Next.js", "TypeScript", "PostgreSQL", "Tailwind CSS"],
+      "link": "https://github.com/example/leettrack",
+      "bullets": [
+        "Built a Next.js + TypeScript app with server-side rendering on a PostgreSQL schema holding 1M+ submissions.",
+        "Styled with Tailwind CSS and shipped preview deployments for every pull request."
+      ]
+    }
+  ],
+  "experience": [
+    {
+      "company": "Finlytics Labs",
+      "role": "Software Engineering Intern",
+      "location": "Gurugram, India",
+      "start": "May 2024",
+      "end": "Jul 2024",
+      "bullets": [
+        "Built a reconciliation service in Python and PostgreSQL that matched 1.2M transactions/day, replacing a manual spreadsheet process.",
+        "Added REST endpoints and Celery background jobs backed by Redis, cutting batch runtime from 40 to 9 minutes.",
+        "Containerized services with Docker and added CI checks that caught 30+ regressions before release."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Delhi Technological University",
+      "short_name": "DTU",
+      "degree": "B.Tech in Computer Science and Engineering",
+      "location": "New Delhi, India",
+      "start": "2021",
+      "end": "2025",
+      "score": "CGPA 8.7/10",
+      "coursework": ["Data Structures & Algorithms", "Operating Systems", "DBMS", "Computer Networks", "Distributed Systems"]
+    }
+  ],
+  "achievements": [
+    "Codeforces Expert (max rating 1712) with 600+ problems solved across platforms.",
+    "Finalist, Smart India Hackathon 2023 (software edition).",
+    "Open-source contributor with merged pull requests to Python and Go projects."
+  ],
+  "github_url": "https://github.com/example",
+  "linkedin_url": "https://www.linkedin.com/in/example",
+  "portfolio_url": null
+}

@@ -1,0 +1,294 @@
+{
+  "jobs": [
+    {
+      "absolute_url": "https://boards.greenhouse.io/stripe/jobs/6001001?gh_jid=6001001",
+      "data_compliance": [
+        {
+          "type": "gdpr",
+          "requires_consent": false,
+          "requires_processing_consent": false,
+          "requires_retention_consent": false,
+          "retention_period": null
+        }
+      ],
+      "internal_job_id": 5001001,
+      "location": {
+        "name": "Bengaluru, India"
+      },
+      "metadata": null,
+      "id": 6001001,
+      "updated_at": "2026-09-28T10:15:00-04:00",
+      "requisition_id": "REQ-1001",
+      "title": "Software Engineer, New Grad",
+      "company_name": "Stripe",
+      "first_published": "2026-09-28T10:15:00-04:00",
+      "content": "\n&lt;h2&gt;Who we are&lt;/h2&gt;&lt;p&gt;Stripe is a financial infrastructure platform for businesses. Millions of companies use Stripe to accept payments, grow their revenue and accelerate new business opportunities.&lt;/p&gt;\n&lt;h2&gt;What you&#x27;ll do&lt;/h2&gt;&lt;ul&gt;&lt;li&gt;Design, build and maintain APIs, services and systems across Stripe&#x27;s engineering teams&lt;/li&gt;&lt;li&gt;Debug production issues across services and multiple levels of the stack&lt;/li&gt;&lt;li&gt;Work with engineers across the company to build new features at large scale&lt;/li&gt;&lt;/ul&gt;\n&lt;h2&gt;Who you are&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;Minimum requirements&lt;/strong&gt;&lt;/p&gt;&lt;ul&gt;&lt;li&gt;A degree in Computer Science or a related field, graduating in 2025 or 2026&lt;/li&gt;&lt;li&gt;Experience writing production-quality code in Java, Go, Ruby or Python&lt;/li&gt;&lt;li&gt;A strong grasp of data structures, algorithms and system design fundamentals&lt;/li&gt;&lt;li&gt;Familiarity with SQL databases such as PostgreSQL or MySQL&lt;/li&gt;&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;Preferred qualifications&lt;/strong&gt;&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Experience with distributed systems, Kafka or other message queues&lt;/li&gt;&lt;li&gt;Exposure to AWS, Docker or Kubernetes&lt;/li&gt;&lt;li&gt;Experience with React or TypeScript&lt;/li&gt;&lt;/ul&gt;",
+      "departments": [
+        {
+          "id": 4011,
+          "name": "Engineering",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ],
+      "offices": [
+        {
+          "id": 5011,
+          "name": "Bengaluru",
+          "location": "Bengaluru, India",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ]
+    },
+    {
+      "absolute_url": "https://boards.greenhouse.io/stripe/jobs/6001002?gh_jid=6001002",
+      "data_compliance": [
+        {
+          "type": "gdpr",
+          "requires_consent": false,
+          "requires_processing_consent": false,
+          "requires_retention_consent": false,
+          "retention_period": null
+        }
+      ],
+      "internal_job_id": 5001002,
+      "location": {
+        "name": "Bengaluru, India"
+      },
+      "metadata": null,
+      "id": 6001002,
+      "updated_at": "2026-09-28T10:15:00-04:00",
+      "requisition_id": "REQ-1002",
+      "title": "Senior Software Engineer, Payments",
+      "company_name": "Stripe",
+      "first_published": "2026-09-28T10:15:00-04:00",
+      "content": "&lt;p&gt;We are looking for a senior engineer with 6+ years of experience building payment systems.&lt;/p&gt;",
+      "departments": [
+        {
+          "id": 4011,
+          "name": "Engineering",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ],
+      "offices": [
+        {
+          "id": 5011,
+          "name": "Bengaluru",
+          "location": "Bengaluru, India",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ]
+    },
+    {
+      "absolute_url": "https://boards.greenhouse.io/stripe/jobs/6001003?gh_jid=6001003",
+      "data_compliance": [
+        {
+          "type": "gdpr",
+          "requires_consent": false,
+          "requires_processing_consent": false,
+          "requires_retention_consent": false,
+          "retention_period": null
+        }
+      ],
+      "internal_job_id": 5001003,
+      "location": {
+        "name": "Bengaluru, India"
+      },
+      "metadata": null,
+      "id": 6001003,
+      "updated_at": "2026-09-28T10:15:00-04:00",
+      "requisition_id": "REQ-1003",
+      "title": "Backend Engineer, Billing",
+      "company_name": "Stripe",
+      "first_published": "2026-09-28T10:15:00-04:00",
+      "content": "\n&lt;p&gt;Join the Billing team to build the systems that invoice millions of businesses.&lt;/p&gt;&lt;h3&gt;Requirements&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;4+ years of experience building backend systems in Java or Go&lt;/li&gt;&lt;li&gt;Experience operating services on AWS&lt;/li&gt;&lt;/ul&gt;",
+      "departments": [
+        {
+          "id": 4011,
+          "name": "Engineering",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ],
+      "offices": [
+        {
+          "id": 5011,
+          "name": "Bengaluru",
+          "location": "Bengaluru, India",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ]
+    },
+    {
+      "absolute_url": "https://boards.greenhouse.io/stripe/jobs/6001004?gh_jid=6001004",
+      "data_compliance": [
+        {
+          "type": "gdpr",
+          "requires_consent": false,
+          "requires_processing_consent": false,
+          "requires_retention_consent": false,
+          "retention_period": null
+        }
+      ],
+      "internal_job_id": 5001004,
+      "location": {
+        "name": "Bengaluru, India"
+      },
+      "metadata": null,
+      "id": 6001004,
+      "updated_at": "2026-09-28T10:15:00-04:00",
+      "requisition_id": "REQ-1004",
+      "title": "Frontend Engineer",
+      "company_name": "Stripe",
+      "first_published": "2026-09-28T10:15:00-04:00",
+      "content": "\n&lt;p&gt;Build the Stripe Dashboard used by millions of businesses every day.&lt;/p&gt;&lt;h3&gt;You should have&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;0-2 years of professional experience with React and TypeScript&lt;/li&gt;&lt;li&gt;A strong foundation in HTML, CSS and accessibility&lt;/li&gt;&lt;li&gt;Experience testing front-end code with Jest&lt;/li&gt;&lt;/ul&gt;&lt;h3&gt;Nice to have&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;Experience with GraphQL&lt;/li&gt;&lt;li&gt;An eye for design and interest in data visualisation&lt;/li&gt;&lt;/ul&gt;",
+      "departments": [
+        {
+          "id": 4011,
+          "name": "Engineering",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ],
+      "offices": [
+        {
+          "id": 5011,
+          "name": "Bengaluru",
+          "location": "Bengaluru, India",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ]
+    },
+    {
+      "absolute_url": "https://boards.greenhouse.io/stripe/jobs/6001005?gh_jid=6001005",
+      "data_compliance": [
+        {
+          "type": "gdpr",
+          "requires_consent": false,
+          "requires_processing_consent": false,
+          "requires_retention_consent": false,
+          "retention_period": null
+        }
+      ],
+      "internal_job_id": 5001005,
+      "location": {
+        "name": "Mumbai, India"
+      },
+      "metadata": null,
+      "id": 6001005,
+      "updated_at": "2026-09-28T10:15:00-04:00",
+      "requisition_id": "REQ-1005",
+      "title": "Account Executive, Enterprise",
+      "company_name": "Stripe",
+      "first_published": "2026-09-28T10:15:00-04:00",
+      "content": "&lt;p&gt;Own enterprise sales relationships across India.&lt;/p&gt;",
+      "departments": [
+        {
+          "id": 4011,
+          "name": "Sales",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ],
+      "offices": [
+        {
+          "id": 5011,
+          "name": "Mumbai",
+          "location": "Mumbai, India",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ]
+    },
+    {
+      "absolute_url": "https://boards.greenhouse.io/stripe/jobs/6001006?gh_jid=6001006",
+      "data_compliance": [
+        {
+          "type": "gdpr",
+          "requires_consent": false,
+          "requires_processing_consent": false,
+          "requires_retention_consent": false,
+          "retention_period": null
+        }
+      ],
+      "internal_job_id": 5001006,
+      "location": {
+        "name": "Dublin, Ireland"
+      },
+      "metadata": null,
+      "id": 6001006,
+      "updated_at": "2026-09-28T10:15:00-04:00",
+      "requisition_id": "REQ-1006",
+      "title": "Software Engineer, Infrastructure",
+      "company_name": "Stripe",
+      "first_published": "2026-09-28T10:15:00-04:00",
+      "content": "\n&lt;p&gt;Keep Stripe&#x27;s infrastructure reliable as it scales.&lt;/p&gt;&lt;h3&gt;Requirements&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;2+ years of experience with Go or Python&lt;/li&gt;&lt;li&gt;Hands-on experience with Kubernetes, Terraform and AWS&lt;/li&gt;&lt;li&gt;Comfortable on Linux and with networking fundamentals&lt;/li&gt;&lt;/ul&gt;",
+      "departments": [
+        {
+          "id": 4011,
+          "name": "Engineering",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ],
+      "offices": [
+        {
+          "id": 5011,
+          "name": "Dublin",
+          "location": "Dublin, Ireland",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ]
+    },
+    {
+      "absolute_url": "https://boards.greenhouse.io/stripe/jobs/6001007?gh_jid=6001007",
+      "data_compliance": [
+        {
+          "type": "gdpr",
+          "requires_consent": false,
+          "requires_processing_consent": false,
+          "requires_retention_consent": false,
+          "retention_period": null
+        }
+      ],
+      "internal_job_id": 5001007,
+      "location": {
+        "name": "Bengaluru, India"
+      },
+      "metadata": null,
+      "id": 6001007,
+      "updated_at": "2026-09-28T10:15:00-04:00",
+      "requisition_id": "REQ-1007",
+      "title": "Staff Software Engineer, Risk",
+      "company_name": "Stripe",
+      "first_published": "2026-09-28T10:15:00-04:00",
+      "content": "&lt;p&gt;Lead the technical direction of risk systems. 10+ years of experience required.&lt;/p&gt;",
+      "departments": [
+        {
+          "id": 4011,
+          "name": "Engineering",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ],
+      "offices": [
+        {
+          "id": 5011,
+          "name": "Bengaluru",
+          "location": "Bengaluru, India",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "total": 7
+  }
+}

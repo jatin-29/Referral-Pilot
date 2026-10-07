@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+.pytest_cache/
+
+# Local state -- never commit
+.env
+data/*
+!data/.gitkeep
+exports/*
+!exports/.gitkeep
+secrets/*
+!secrets/.gitkeep
+
+# LaTeX build leftovers
+*.aux
+*.out
+*.toc
+*.synctex.gz
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store

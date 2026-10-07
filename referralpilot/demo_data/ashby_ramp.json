@@ -1,0 +1,52 @@
+{
+  "apiVersion": "1",
+  "jobs": [
+    {
+      "id": "0d3c7b0e-91d4-4c8f-a4a1-6d2e1f9b7c01",
+      "title": "Software Engineer, New Grad (2025)",
+      "department": "Engineering",
+      "team": "Product Engineering",
+      "employmentType": "FullTime",
+      "location": "New York, NY",
+      "secondaryLocations": [
+        {
+          "location": "Remote (US)",
+          "address": null
+        }
+      ],
+      "publishedAt": "2026-09-25T14:00:00.000+00:00",
+      "isListed": true,
+      "isRemote": true,
+      "jobUrl": "https://jobs.ashbyhq.com/ramp/0d3c7b0e-91d4-4c8f-a4a1-6d2e1f9b7c01",
+      "applyUrl": "https://jobs.ashbyhq.com/ramp/0d3c7b0e-91d4-4c8f-a4a1-6d2e1f9b7c01/application",
+      "descriptionHtml": "<p>Ramp builds finance automation software.</p><h3>What you'll do</h3><ul><li>Ship product features end-to-end in Python and TypeScript</li><li>Build React interfaces and the PostgreSQL-backed APIs behind them</li></ul><h3>What we look for</h3><ul><li>Graduating in 2025 with a CS degree or equivalent experience</li><li>Strong fundamentals in data structures and algorithms</li><li>Experience with Python, TypeScript or Kotlin</li></ul><h3>Nice to have</h3><ul><li>Experience with AWS and Terraform</li></ul>",
+      "descriptionPlain": ""
+    },
+    {
+      "id": "0d3c7b0e-91d4-4c8f-a4a1-6d2e1f9b7c02",
+      "title": "Senior Software Engineer, Backend",
+      "department": "Engineering",
+      "team": "Platform",
+      "employmentType": "FullTime",
+      "location": "New York, NY",
+      "secondaryLocations": [],
+      "publishedAt": "2026-09-20T14:00:00.000+00:00",
+      "isListed": true,
+      "isRemote": false,
+      "jobUrl": "https://jobs.ashbyhq.com/ramp/0d3c7b0e-91d4-4c8f-a4a1-6d2e1f9b7c02",
+      "descriptionHtml": "<p>5+ years of experience with Python and distributed systems.</p>",
+      "descriptionPlain": ""
+    },
+    {
+      "id": "0d3c7b0e-91d4-4c8f-a4a1-6d2e1f9b7c03",
+      "title": "Software Engineer (Unlisted)",
+      "department": "Engineering",
+      "employmentType": "FullTime",
+      "location": "New York, NY",
+      "publishedAt": "2026-09-20T14:00:00.000+00:00",
+      "isListed": false,
+      "jobUrl": "https://jobs.ashbyhq.com/ramp/0d3c7b0e-91d4-4c8f-a4a1-6d2e1f9b7c03",
+      "descriptionHtml": "<p>Hidden</p>"
+    }
+  ]
+}

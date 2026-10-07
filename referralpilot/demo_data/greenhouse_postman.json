@@ -1,0 +1,130 @@
+{
+  "jobs": [
+    {
+      "absolute_url": "https://boards.greenhouse.io/postman/jobs/7002001?gh_jid=7002001",
+      "data_compliance": [
+        {
+          "type": "gdpr",
+          "requires_consent": false,
+          "requires_processing_consent": false,
+          "requires_retention_consent": false,
+          "retention_period": null
+        }
+      ],
+      "internal_job_id": 6002001,
+      "location": {
+        "name": "Bengaluru, India"
+      },
+      "metadata": null,
+      "id": 7002001,
+      "updated_at": "2026-10-01T08:00:00+05:30",
+      "requisition_id": "REQ-2001",
+      "title": "Software Engineer I - Backend",
+      "company_name": "Postman",
+      "first_published": "2026-10-01T08:00:00+05:30",
+      "content": "\n&lt;p&gt;Postman is the world&#x27;s leading API platform, used by more than 30 million developers.&lt;/p&gt;\n&lt;h3&gt;What You&#x27;ll Do&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;Build and scale backend services in Node.js that power collections, workspaces and the public API network&lt;/li&gt;&lt;li&gt;Design RESTful APIs backed by MongoDB, PostgreSQL and Redis&lt;/li&gt;&lt;li&gt;Own features end-to-end: design, testing, deployment and monitoring on AWS&lt;/li&gt;&lt;/ul&gt;\n&lt;h3&gt;What You&#x27;ll Need&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;1+ years of experience (internships count) building backend services with JavaScript, TypeScript or Go&lt;/li&gt;&lt;li&gt;Solid computer science fundamentals: data structures, algorithms, operating systems and networking&lt;/li&gt;&lt;li&gt;Experience designing REST APIs on relational or document databases&lt;/li&gt;&lt;/ul&gt;\n&lt;h3&gt;Nice to Have&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;Experience with Docker, Kubernetes and CI/CD pipelines&lt;/li&gt;&lt;li&gt;Exposure to microservices and event-driven architectures with Kafka&lt;/li&gt;&lt;/ul&gt;",
+      "departments": [
+        {
+          "id": 4011,
+          "name": "Engineering",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ],
+      "offices": [
+        {
+          "id": 5011,
+          "name": "Bengaluru",
+          "location": "Bengaluru, India",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ]
+    },
+    {
+      "absolute_url": "https://boards.greenhouse.io/postman/jobs/7002002?gh_jid=7002002",
+      "data_compliance": [
+        {
+          "type": "gdpr",
+          "requires_consent": false,
+          "requires_processing_consent": false,
+          "requires_retention_consent": false,
+          "retention_period": null
+        }
+      ],
+      "internal_job_id": 6002002,
+      "location": {
+        "name": "Bengaluru, India"
+      },
+      "metadata": null,
+      "id": 7002002,
+      "updated_at": "2026-09-28T10:15:00-04:00",
+      "requisition_id": "REQ-2002",
+      "title": "Software Engineer II, Platform",
+      "company_name": "Postman",
+      "first_published": "2026-09-28T10:15:00-04:00",
+      "content": "&lt;p&gt;2-5 years of experience with distributed systems.&lt;/p&gt;",
+      "departments": [
+        {
+          "id": 4011,
+          "name": "Engineering",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ],
+      "offices": [
+        {
+          "id": 5011,
+          "name": "Bengaluru",
+          "location": "Bengaluru, India",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ]
+    },
+    {
+      "absolute_url": "https://boards.greenhouse.io/postman/jobs/7002003?gh_jid=7002003",
+      "data_compliance": [
+        {
+          "type": "gdpr",
+          "requires_consent": false,
+          "requires_processing_consent": false,
+          "requires_retention_consent": false,
+          "retention_period": null
+        }
+      ],
+      "internal_job_id": 6002003,
+      "location": {
+        "name": "Remote, India"
+      },
+      "metadata": null,
+      "id": 7002003,
+      "updated_at": "2026-09-30T08:00:00+05:30",
+      "requisition_id": "REQ-2003",
+      "title": "Full Stack Engineer",
+      "company_name": "Postman",
+      "first_published": "2026-09-30T08:00:00+05:30",
+      "content": "\n&lt;p&gt;Work across the Postman desktop and web apps.&lt;/p&gt;&lt;h3&gt;Requirements&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;0-2 years of experience shipping web applications&lt;/li&gt;&lt;li&gt;Strong JavaScript and TypeScript skills with React on the front end and Node.js on the back end&lt;/li&gt;&lt;li&gt;Understanding of REST and GraphQL APIs&lt;/li&gt;&lt;/ul&gt;&lt;h3&gt;Bonus&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;Experience with Electron or WebSockets&lt;/li&gt;&lt;/ul&gt;",
+      "departments": [
+        {
+          "id": 4011,
+          "name": "Engineering",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ],
+      "offices": [
+        {
+          "id": 5011,
+          "name": "Remote",
+          "location": "Remote, India",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "total": 3
+  }
+}

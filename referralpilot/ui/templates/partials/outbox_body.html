@@ -1,0 +1,98 @@
+{% macro email_row(row, show_eta=false, show_sent=false) %}
+{% set item = row.item %}
+<tr class="hover:bg-slate-50">
+  <td class="px-3 py-2"><span class="badge {{ item.status|status_class }}">{{ item.status|label }}</span></td>
+  <td class="px-3 py-2"><span class="chip bg-slate-100 text-slate-600">{{ item.type }}</span></td>
+  <td class="px-3 py-2">
+    <p class="font-medium text-slate-800">{{ row.contact.name if row.contact else '?' }}</p>
+    <p class="text-xs text-slate-500">{{ item.to_email }}</p>
+  </td>
+  <td class="px-3 py-2">
+    <p class="text-slate-800">{{ row.job.company if row.job else '' }}</p>
+    <p class="max-w-[16rem] truncate text-xs text-slate-500">{{ row.job.title if row.job else '' }}</p>
+  </td>
+  <td class="max-w-[22rem] truncate px-3 py-2 text-slate-600">{{ item.subject }}</td>
+  {% if show_eta %}
+  <td class="px-3 py-2 text-xs text-slate-600">{{ ('~' ~ (row.eta|ago)) if row.eta else 'after 24h cap resets' }}</td>
+  {% endif %}
+  {% if show_sent %}
+  <td class="px-3 py-2 text-xs text-slate-600">
+    {{ item.sent_at|dt }}{% if item.dry_run %} <span class="chip bg-amber-50 text-amber-700">dry run</span>{% endif %}
+    {% if item.replied %} <span class="chip bg-emerald-50 text-emerald-700">replied</span>{% endif %}
+  </td>
+  {% endif %}
+  {% if not show_eta and not show_sent %}
+  <td class="max-w-[18rem] truncate px-3 py-2 text-xs text-rose-600">{{ item.error or '' }}</td>
+  {% endif %}
+  <td class="whitespace-nowrap px-3 py-2 text-right text-xs">
+    {% if item.status in ['draft', 'queued', 'failed'] %}<button class="link" hx-get="/outreach/{{ item.id }}/edit" hx-target="#modal">Edit</button>{% endif %}
+    {% if item.status == 'sent' %}<button class="link" hx-get="/outreach/{{ item.id }}/edit" hx-target="#modal">View</button>{% endif %}
+    {% if item.status == 'draft' %}<button class="link ml-2" hx-post="/outreach/{{ item.id }}/approve" hx-swap="none">Approve</button>{% endif %}
+    {% if item.status in ['failed', 'skipped'] %}<button class="link ml-2" hx-post="/outreach/{{ item.id }}/retry" hx-swap="none">Retry</button>{% endif %}
+    {% if item.status in ['draft', 'queued', 'failed'] %}<button class="link ml-2 text-rose-600" hx-post="/outreach/{{ item.id }}/cancel" hx-swap="none">Cancel</button>{% endif %}
+  </td>
+</tr>
+{% endmacro %}
+
+<div class="grid grid-cols-2 gap-3 lg:grid-cols-5">
+  <div class="stat">
+    <p class="stat-label">Mode</p>
+    <p class="stat-value {{ 'text-amber-600' if status.dry_run else 'text-rose-600' }}">{{ 'Dry run' if status.dry_run else 'Live' }}</p>
+    <p class="stat-hint">{{ 'saved as .eml in exports/outbox' if status.dry_run else 'sending via ' ~ status.backend|replace('_', ' ') }}</p>
+  </div>
+  <div class="stat">
+    <p class="stat-label">Sent · last 24h</p>
+    <p class="stat-value">{{ status.sent_24h }}<span class="text-base text-slate-400">/{{ status.limit }}</span></p>
+    <div class="mt-2 h-1.5 rounded-full bg-slate-100"><div class="h-1.5 rounded-full {{ 'bg-rose-500' if status.sent_24h >= status.limit else 'bg-indigo-500' }}" style="width: {{ (status.sent_24h / status.limit * 100) if status.limit else 0 }}%"></div></div>
+  </div>
+  <div class="stat">
+    <p class="stat-label">Next send</p>
+    <p class="stat-value text-lg">
+      {% if status.paused %}Paused{% elif not status.in_window %}{{ status.next_window_at|ago }}{% elif status.capacity_frees_at %}{{ status.capacity_frees_at|ago }}{% elif status.next_send_at and status.next_send_at > now %}{{ status.next_send_at|ago }}{% elif status.queued %}within 30s{% else %}—{% endif %}
+    </p>
+    <p class="stat-hint">{{ status.pause_reason or ('window ' ~ status.window) }}</p>
+  </div>
+  <div class="stat">
+    <p class="stat-label">Queued</p>
+    <p class="stat-value">{{ status.queued }}</p>
+    <p class="stat-hint">{{ status.drafts }} draft(s) awaiting approval</p>
+  </div>
+  <div class="stat flex flex-col justify-between">
+    <p class="stat-label">Sending</p>
+    {% if status.paused %}
+    <button class="btn btn-primary mt-2" hx-post="/outbox/resume" hx-swap="none">Resume sending</button>
+    {% else %}
+    <button class="btn mt-2" hx-post="/outbox/pause" hx-swap="none">Pause sending</button>
+    {% endif %}
+  </div>
+</div>
+
+{% for title, rows, mode, empty in [
+  ('Send queue', queued, 'eta', 'Nothing queued. Approve a draft to queue it.'),
+  ('Drafts awaiting approval', drafts, 'none', 'No drafts.'),
+  ('Recently sent', sent, 'sent', 'Nothing sent yet.'),
+  ('Failed / skipped', problems, 'none', 'No problems.'),
+] %}
+<section class="mt-6">
+  <h2 class="section-title">{{ title }} <span class="text-slate-400">· {{ rows|length }}</span></h2>
+  {% if rows %}
+  <div class="mt-2 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+    <table class="min-w-full text-sm">
+      <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-3 py-2">Status</th><th class="px-3 py-2">Type</th><th class="px-3 py-2">Recipient</th>
+          <th class="px-3 py-2">Job</th><th class="px-3 py-2">Subject</th>
+          <th class="px-3 py-2">{{ 'ETA' if mode == 'eta' else ('Sent' if mode == 'sent' else 'Reason') }}</th>
+          <th class="px-3 py-2"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for row in rows %}{{ email_row(row, show_eta=(mode == 'eta'), show_sent=(mode == 'sent')) }}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="mt-2 text-sm text-slate-500">{{ empty }}</p>
+  {% endif %}
+</section>
+{% endfor %}

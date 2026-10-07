@@ -1,0 +1,27 @@
+{% set job = card.job %}
+<article class="job-card cursor-pointer rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition hover:border-indigo-300 hover:shadow-md"
+         data-job-id="{{ job.id }}" hx-get="/jobs/{{ job.id }}" hx-target="#drawer" hx-swap="innerHTML">
+  <div class="flex items-start justify-between gap-2">
+    <div class="min-w-0">
+      <p class="truncate text-[11px] font-semibold uppercase tracking-wide text-slate-500">{{ job.company }}</p>
+      <h3 class="mt-0.5 line-clamp-2 text-[13.5px] font-semibold leading-snug text-slate-900">{{ job.title }}</h3>
+    </div>
+    <span class="score-badge ring-1 {{ job.match_score|score_class }}" title="ATS match score">
+      {{ ('%.0f'|format(job.match_score)) ~ '%' if job.match_score is not none else '—' }}
+    </span>
+  </div>
+  <p class="mt-1.5 truncate text-xs text-slate-500">{{ job.location or 'Location n/a' }} · {{ job.discovered_at|ago }}</p>
+  <div class="mt-2 flex flex-wrap items-center gap-1.5">
+    <span class="chip bg-slate-100 text-slate-600">{{ job.ats_type }}</span>
+    {% if job.resume_pdf_path %}<span class="chip bg-emerald-50 text-emerald-700">PDF</span>{% endif %}
+    {% if card.contacts %}
+    <span class="chip bg-slate-100 text-slate-600">
+      <svg viewBox="0 0 24 24" class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>{{ card.contacts }}
+    </span>
+    {% endif %}
+    {% if card.drafts %}<span class="chip bg-sky-50 text-sky-700">{{ card.drafts }} draft</span>{% endif %}
+    {% if card.queued %}<span class="chip bg-indigo-50 text-indigo-700">{{ card.queued }} queued</span>{% endif %}
+    {% if card.sent %}<span class="chip bg-violet-50 text-violet-700">{{ card.sent }} sent</span>{% endif %}
+    {% if job.status == 'referred' %}<span class="chip bg-emerald-600 text-white">Referred</span>{% endif %}
+  </div>
+</article>

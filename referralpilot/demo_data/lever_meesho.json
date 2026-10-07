@@ -1,0 +1,182 @@
+[
+  {
+    "additional": "<div>Location: Bangalore (hybrid). Equal opportunity employer.</div>",
+    "additionalPlain": "Location: Bangalore (hybrid). Equal opportunity employer.",
+    "categories": {
+      "commitment": "Full-time",
+      "department": "Technology",
+      "location": "Bangalore",
+      "team": "Backend",
+      "allLocations": [
+        "Bangalore"
+      ]
+    },
+    "createdAt": 1759300000000,
+    "descriptionPlain": "Meesho is democratising internet commerce for everyone. As an SDE-1 you will build the services behind catalog, orders and payments for 150M+ customers.",
+    "description": "<div>Meesho is democratising internet commerce for everyone. As an SDE-1 you will build the services behind catalog, orders and payments for 150M+ customers.</div>",
+    "id": "3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e01",
+    "lists": [
+      {
+        "text": "What you will do",
+        "content": "<li>Build scalable microservices in Java or Go using Spring Boot</li><li>Work on high-throughput systems with Kafka, Redis and MySQL</li><li>Deploy and operate services on AWS with Docker and Kubernetes</li>"
+      },
+      {
+        "text": "What you will need",
+        "content": "<li>0-2 years of experience in backend development (internships count)</li><li>Strong data structures, algorithms and OOP fundamentals</li><li>Knowledge of REST APIs and SQL databases</li>"
+      },
+      {
+        "text": "Good to have",
+        "content": "<li>Experience with distributed systems or caching</li><li>Open-source contributions</li>"
+      }
+    ],
+    "text": "SDE-1 (Backend)",
+    "country": "IN",
+    "workplaceType": "onsite",
+    "hostedUrl": "https://jobs.lever.co/meesho/3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e01",
+    "applyUrl": "https://jobs.lever.co/meesho/3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e01/apply"
+  },
+  {
+    "additional": "<div></div>",
+    "additionalPlain": "",
+    "categories": {
+      "commitment": "Full-time",
+      "department": "Technology",
+      "location": "Bangalore",
+      "team": "Frontend",
+      "allLocations": [
+        "Bangalore"
+      ]
+    },
+    "createdAt": 1759300000000,
+    "descriptionPlain": "Own the web storefront experience.",
+    "description": "<div>Own the web storefront experience.</div>",
+    "id": "3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e02",
+    "lists": [
+      {
+        "text": "Requirements",
+        "content": "<li>3-5 years of experience with React</li>"
+      }
+    ],
+    "text": "SDE-2 (Frontend)",
+    "country": "IN",
+    "workplaceType": "onsite",
+    "hostedUrl": "https://jobs.lever.co/meesho/3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e02",
+    "applyUrl": "https://jobs.lever.co/meesho/3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e02/apply"
+  },
+  {
+    "additional": "<div></div>",
+    "additionalPlain": "",
+    "categories": {
+      "commitment": "Full-time",
+      "department": "Technology",
+      "location": "Bangalore",
+      "team": "Ads",
+      "allLocations": [
+        "Bangalore"
+      ]
+    },
+    "createdAt": 1759300000000,
+    "descriptionPlain": "Lead the ads platform team.",
+    "description": "<div>Lead the ads platform team.</div>",
+    "id": "3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e03",
+    "lists": [
+      {
+        "text": "Requirements",
+        "content": "<li>8+ years of experience</li>"
+      }
+    ],
+    "text": "Lead Software Engineer - Ads",
+    "country": "IN",
+    "workplaceType": "onsite",
+    "hostedUrl": "https://jobs.lever.co/meesho/3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e03",
+    "applyUrl": "https://jobs.lever.co/meesho/3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e03/apply"
+  },
+  {
+    "additional": "<div></div>",
+    "additionalPlain": "",
+    "categories": {
+      "commitment": "Full-time",
+      "department": "Technology",
+      "location": "Bangalore",
+      "team": "Seller Platform",
+      "allLocations": [
+        "Bangalore"
+      ]
+    },
+    "createdAt": 1759400000000,
+    "descriptionPlain": "Build tools that help millions of small businesses sell online.",
+    "description": "<div>Build tools that help millions of small businesses sell online.</div>",
+    "id": "3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e04",
+    "lists": [
+      {
+        "text": "Responsibilities",
+        "content": "<li>Develop features across a React front end and Node.js services</li><li>Model data in MongoDB and expose it through REST APIs</li>"
+      },
+      {
+        "text": "Requirements",
+        "content": "<li>1-3 years of experience with JavaScript or TypeScript</li><li>Hands-on experience with React and Node.js</li><li>Familiarity with MongoDB</li>"
+      }
+    ],
+    "text": "Full Stack Developer",
+    "country": "IN",
+    "workplaceType": "onsite",
+    "hostedUrl": "https://jobs.lever.co/meesho/3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e04",
+    "applyUrl": "https://jobs.lever.co/meesho/3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e04/apply"
+  },
+  {
+    "additional": "<div></div>",
+    "additionalPlain": "",
+    "categories": {
+      "commitment": "Full-time",
+      "department": "Technology",
+      "location": "Bangalore",
+      "team": "Payments",
+      "allLocations": [
+        "Bangalore"
+      ]
+    },
+    "createdAt": 1759300000000,
+    "descriptionPlain": "Scale payment reconciliation.",
+    "description": "<div>Scale payment reconciliation.</div>",
+    "id": "3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e05",
+    "lists": [
+      {
+        "text": "Requirements",
+        "content": "<li>3+ years of experience with Java and Spring Boot</li><li>Experience with PostgreSQL</li>"
+      }
+    ],
+    "text": "Backend Developer - Payments",
+    "country": "IN",
+    "workplaceType": "onsite",
+    "hostedUrl": "https://jobs.lever.co/meesho/3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e05",
+    "applyUrl": "https://jobs.lever.co/meesho/3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e05/apply"
+  },
+  {
+    "additional": "<div></div>",
+    "additionalPlain": "",
+    "categories": {
+      "commitment": "Full-time",
+      "department": "Technology",
+      "location": "Bangalore",
+      "team": "Data",
+      "allLocations": [
+        "Bangalore"
+      ]
+    },
+    "createdAt": 1759300000000,
+    "descriptionPlain": "Build ranking models.",
+    "description": "<div>Build ranking models.</div>",
+    "id": "3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e06",
+    "lists": [
+      {
+        "text": "Requirements",
+        "content": "<li>Python, SQL, machine learning</li>"
+      }
+    ],
+    "text": "Data Scientist",
+    "country": "IN",
+    "workplaceType": "onsite",
+    "hostedUrl": "https://jobs.lever.co/meesho/3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e06",
+    "applyUrl": "https://jobs.lever.co/meesho/3f1c9a52-0b7e-4c1e-9d0a-5a1b2c3d4e06/apply"
+  }
+]

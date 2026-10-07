@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Companies · ReferralPilot{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-7xl px-6 py-6">
+  <h1 class="text-2xl font-semibold text-slate-900">Target companies</h1>
+  <p class="mt-1 text-sm text-slate-500">Public job boards crawled every {{ settings().harvest_interval_hours|round(1) }}h. The board token is the slug in the board URL - e.g. <code>boards.greenhouse.io/<b>stripe</b></code>, <code>jobs.lever.co/<b>meesho</b></code>, <code>jobs.ashbyhq.com/<b>ramp</b></code>. Seeded from <code>config/companies.json</code>.</p>
+
+  <form class="mt-5 grid grid-cols-1 gap-2 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-5"
+        hx-post="/companies" hx-target="#companies-table" hx-swap="outerHTML" hx-on::after-request="if(event.detail.successful) this.reset()">
+    <input class="input" name="name" placeholder="Company name *" required>
+    <select class="input" name="ats_type">
+      {% for ats in ats_types %}<option value="{{ ats }}">{{ ats }}</option>{% endfor %}
+    </select>
+    <input class="input" name="board_token" placeholder="Board token *" required>
+    <input class="input" name="domain" placeholder="Email domain (e.g. stripe.com)">
+    <button class="btn btn-primary">Add company</button>
+  </form>
+
+  {% include "partials/companies_table.html" %}
+</div>
+{% endblock %}

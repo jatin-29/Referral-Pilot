@@ -1,0 +1,26 @@
+{% if status.dry_run %}
+<span class="pill bg-amber-100 text-amber-800 ring-amber-200" title="Emails are written to exports/outbox as .eml files">Dry run</span>
+{% else %}
+<span class="pill bg-rose-100 text-rose-800 ring-rose-200" title="Emails are really sent">Live · {{ status.backend|replace('_', ' ') }}</span>
+{% endif %}
+<span class="pill bg-white text-slate-700 ring-slate-200" title="Hard limit: {{ status.limit }} emails per rolling 24 hours">
+  <span><span class="font-semibold">{{ status.sent_24h }}</span>/{{ status.limit }}</span> sent · 24h
+</span>
+{% if status.paused %}
+<span class="pill bg-rose-50 text-rose-700 ring-rose-200" title="{{ status.pause_reason or '' }}">Sending paused</span>
+{% elif not status.in_window %}
+<span class="pill bg-slate-100 text-slate-600 ring-slate-200" title="Send window {{ status.window }}">Window opens {{ status.next_window_at|ago }}</span>
+{% elif status.capacity_frees_at %}
+<span class="pill bg-slate-100 text-slate-600 ring-slate-200">Daily cap hit · frees {{ status.capacity_frees_at|ago }}</span>
+{% elif status.queued %}
+<span class="pill bg-indigo-50 text-indigo-700 ring-indigo-200">{{ status.queued }} queued · next {{ status.next_send_at|ago if status.next_send_at else 'now' }}</span>
+{% endif %}
+{% if status.paused %}
+<button class="btn btn-sm" hx-post="/outbox/resume" hx-swap="none">Resume sending</button>
+{% else %}
+<button class="btn btn-sm" hx-post="/outbox/pause" hx-swap="none" title="Stop the drip-feed (nothing is lost)">Pause</button>
+{% endif %}
+<button class="btn btn-sm btn-primary" hx-post="/harvest" hx-swap="none" {% if harvesting %}disabled{% endif %}>
+  <svg viewBox="0 0 24 24" class="h-3.5 w-3.5 {{ 'animate-spin' if harvesting else '' }}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
+  {{ 'Harvesting…' if harvesting else 'Harvest now' }}
+</button>

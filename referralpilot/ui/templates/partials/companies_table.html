@@ -1,0 +1,35 @@
+<div id="companies-table" class="mt-5 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+  <table class="min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+      <tr>
+        <th class="px-4 py-2">Company</th><th class="px-4 py-2">ATS</th><th class="px-4 py-2">Board token</th>
+        <th class="px-4 py-2">Domain</th><th class="px-4 py-2">Jobs</th><th class="px-4 py-2">Last harvest</th><th class="px-4 py-2"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for company in companies %}
+      <tr class="{{ '' if company.enabled else 'bg-slate-50/60 text-slate-400' }}">
+        <td class="px-4 py-2.5 font-medium {{ 'text-slate-900' if company.enabled else '' }}">{{ company.name }}
+          {% for tag in company.tags or [] %}<span class="chip ml-1 bg-slate-100 text-slate-500">{{ tag }}</span>{% endfor %}
+        </td>
+        <td class="px-4 py-2.5">{{ company.ats_type }}</td>
+        <td class="px-4 py-2.5 font-mono text-xs">{{ company.board_token }}</td>
+        <td class="px-4 py-2.5">{{ company.domain or '—' }}</td>
+        <td class="px-4 py-2.5">{{ counts.get(company.id, 0) }}</td>
+        <td class="px-4 py-2.5 text-xs">
+          {% if company.last_harvested_at %}{{ company.last_harvested_at|ago }}
+            <span class="block max-w-[18rem] truncate {{ 'text-rose-600' if (company.last_harvest_status or '').startswith('error') else 'text-slate-500' }}" title="{{ company.last_harvest_status }}">{{ company.last_harvest_status }}</span>
+          {% else %}never{% endif %}
+        </td>
+        <td class="whitespace-nowrap px-4 py-2.5 text-right text-xs">
+          <button class="link" hx-post="/companies/{{ company.id }}/harvest" hx-target="#companies-table" hx-swap="outerHTML">Harvest</button>
+          <button class="link ml-3" hx-post="/companies/{{ company.id }}/toggle" hx-target="#companies-table" hx-swap="outerHTML">{{ 'Disable' if company.enabled else 'Enable' }}</button>
+          <button class="link ml-3 text-rose-600" hx-post="/companies/{{ company.id }}/delete" hx-target="#companies-table" hx-swap="outerHTML" hx-confirm="Remove {{ company.name }}? Its jobs are kept.">Remove</button>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="px-4 py-6 text-center text-slate-500">No companies yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

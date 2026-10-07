@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Board · ReferralPilot{% endblock %}
+{% block content %}
+<div class="flex h-[calc(100vh-53px)] flex-col">
+  <form id="filters" class="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-white px-5 py-2.5 text-sm"
+        hx-get="/partials/board" hx-target="#board" hx-swap="innerHTML"
+        hx-trigger="input changed delay:300ms from:#q, change from:select, change from:#archived">
+    <div class="relative">
+      <svg viewBox="0 0 24 24" class="pointer-events-none absolute left-2.5 top-2 h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" name="q" type="search" placeholder="Search title, company, location" class="input w-72 pl-8">
+    </div>
+    <select name="company" class="input w-48">
+      <option value="">All companies</option>
+      {% for name in companies %}<option value="{{ name }}">{{ name }}</option>{% endfor %}
+    </select>
+    <select name="min_score" class="input w-36">
+      <option value="">Any ATS score</option>
+      <option value="60">60%+</option>
+      <option value="75">75%+</option>
+      <option value="85">85%+</option>
+    </select>
+    <label class="ml-1 inline-flex items-center gap-2 text-slate-600">
+      <input id="archived" type="checkbox" name="archived" value="true" class="rounded border-slate-300"> Show archived
+    </label>
+    <p class="ml-auto hidden text-xs text-slate-400 lg:block">Drag cards between stages · click a card for details</p>
+  </form>
+
+  <div id="board" class="min-h-0 flex-1 overflow-x-auto"
+       hx-get="/partials/board" hx-trigger="load, refreshBoard from:body" hx-include="#filters" hx-swap="innerHTML">
+    <div class="p-6 text-sm text-slate-400">Loading board…</div>
+  </div>
+
+  <section class="border-t border-slate-200 bg-slate-900 text-slate-100" id="log-dock">
+    <button type="button" onclick="toggleLogDock()" class="flex w-full items-center gap-2 px-5 py-1.5 text-left text-xs font-medium text-slate-300 hover:text-white">
+      <span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60"></span><span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-400"></span></span>
+      Live activity · scheduler, scraper &amp; outreach
+      <span class="ml-auto text-slate-500" id="log-dock-hint">hide</span>
+    </button>
+    <div id="live-log" class="live-log h-40 overflow-y-auto px-5 pb-2 font-mono text-[11.5px] leading-5" data-backlog="40"></div>
+  </section>
+</div>
+{% endblock %}

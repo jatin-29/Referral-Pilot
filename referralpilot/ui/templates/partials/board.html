@@ -1,0 +1,22 @@
+<div class="flex h-full gap-3 p-4">
+  {% for column in columns %}
+  <section class="flex min-w-[15rem] flex-1 shrink-0 basis-0 flex-col rounded-xl bg-slate-100/80 ring-1 ring-slate-200/70">
+    <header class="flex items-center justify-between px-3 pb-2 pt-3">
+      <h2 class="flex items-center gap-2 text-[13px] font-semibold text-slate-700">
+        <span class="stage-dot stage-{{ column.key }}"></span>{{ column.label }}
+      </h2>
+      <span class="rounded-full bg-white px-2 py-0.5 text-xs font-medium text-slate-500 ring-1 ring-slate-200">{{ column.total }}</span>
+    </header>
+    <div class="kanban-list min-h-[6rem] flex-1 space-y-2 overflow-y-auto px-2 pb-3" data-status="{{ column.statuses[0] }}">
+      {% for card in column.cards %}
+        {% include "partials/job_card.html" %}
+      {% else %}
+        <p class="empty-col rounded-lg border border-dashed border-slate-300 px-3 py-6 text-center text-xs text-slate-400">Drop jobs here</p>
+      {% endfor %}
+      {% if column.total > column.cards|length %}
+        <p class="px-2 text-center text-xs text-slate-400">+{{ column.total - column.cards|length }} more · narrow the filters</p>
+      {% endif %}
+    </div>
+  </section>
+  {% endfor %}
+</div>

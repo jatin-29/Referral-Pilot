@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "referralpilot"
+version = "0.1.0"
+description = "Local-first placement discovery, LaTeX resume tailoring and rate-limited referral outreach engine."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Jatin Maggo" }]
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn>=0.29",
+  "sqlmodel>=0.0.21",
+  "pydantic>=2.6",
+  "pydantic-settings>=2.7",
+  "httpx>=0.27",
+  "beautifulsoup4>=4.12",
+  "jinja2>=3.1",
+  "apscheduler>=3.10,<4",
+  "python-multipart>=0.0.9",
+  "fpdf2>=2.7",
+  "tzdata; sys_platform == 'win32'",
+]
+
+[project.optional-dependencies]
+# Gmail API sending + reply detection (OAuth2 with a cached token).
+gmail = [
+  "google-api-python-client>=2.100",
+  "google-auth-oauthlib>=1.2",
+  "google-auth-httplib2>=0.2",
+]
+# Headless Typst compiler used when no LaTeX engine is installed.
+typst = ["typst>=0.11"]
+# MX-record checks for discovered company domains.
+dns = ["dnspython>=2.6"]
+dev = ["pytest>=8", "aiosmtpd>=1.4"]
+all = ["referralpilot[gmail,typst,dns]"]
+
+[project.scripts]
+referralpilot = "referralpilot.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["referralpilot*"]
+
+[tool.setuptools.package-data]
+referralpilot = [
+  "ui/templates/*.html",
+  "ui/templates/partials/*.html",
+  "ui/static/*",
+  "demo_data/*",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = [
+  "ignore::DeprecationWarning:apscheduler.*",
+  "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]

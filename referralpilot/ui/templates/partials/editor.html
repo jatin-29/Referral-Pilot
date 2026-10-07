@@ -1,0 +1,64 @@
+{% set editable = item.status in ['draft', 'queued', 'failed'] %}
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4" id="modal-root">
+  <form class="flex max-h-[92vh] w-full max-w-3xl flex-col rounded-xl bg-white shadow-2xl"
+        hx-post="/outreach/{{ item.id }}" hx-target="#modal" hx-swap="innerHTML">
+    <header class="flex items-start gap-3 border-b border-slate-200 px-5 py-4">
+      <div class="min-w-0 flex-1">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ 'Follow-up' if item.type == 'followup' else 'Referral request' }} · {{ job.company }} · {{ job.title }}</p>
+        <h2 class="mt-0.5 text-lg font-semibold text-slate-900">
+          {{ 'Review & approve email' if editable else 'Email' }} to {{ contact.name if contact else item.to_email }}
+        </h2>
+      </div>
+      <span class="badge {{ item.status|status_class }}">{{ item.status|label }}</span>
+      <button type="button" class="btn btn-ghost" onclick="closeModal()" aria-label="Close">
+        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </header>
+
+    <div class="space-y-3 overflow-y-auto px-5 py-4">
+      <label class="block text-sm">
+        <span class="field-label">To</span>
+        <input class="input mt-1" name="to_email" type="email" value="{{ item.to_email }}" {% if not editable %}readonly{% endif %} required>
+        {% if contact %}<span class="mt-1 block text-xs text-slate-500">{{ contact.role or 'Role unknown' }} · email confidence {{ (contact.email_confidence * 100)|round|int }}% ({{ contact.email_source }}){% if contact.is_alumni %} · alumni{% endif %}</span>{% endif %}
+      </label>
+      <label class="block text-sm">
+        <span class="field-label">Subject</span>
+        <input class="input mt-1" name="subject" value="{{ item.subject }}" {% if not editable %}readonly{% endif %} required>
+      </label>
+      <label class="block text-sm">
+        <span class="field-label">Message</span>
+        <textarea class="input mt-1 h-80 font-mono text-[13px] leading-relaxed" name="body" data-count {% if not editable %}readonly{% endif %} required>{{ item.body }}</textarea>
+        <span class="mt-1 block text-xs text-slate-400" data-counter></span>
+      </label>
+      <div class="flex flex-wrap gap-2 text-xs">
+        {% if item.type == 'initial' %}
+          {% if attach %}<span class="chip bg-slate-100 text-slate-700">📎 Tailored resume attached ({{ item.attachment_path|basename }})</span>
+          {% else %}<span class="chip bg-amber-50 text-amber-700">No resume attached - compile one first or set ATTACH_RESUME</span>{% endif %}
+        {% else %}
+          <span class="chip bg-slate-100 text-slate-700">Threaded reply (In-Reply-To {{ item.in_reply_to or 'original' }})</span>
+        {% endif %}
+        <span class="chip bg-slate-100 text-slate-700">Opt-out line + List-Unsubscribe header included</span>
+        {% if item.sent_at %}<span class="chip bg-violet-50 text-violet-700">Sent {{ item.sent_at|dt }}{% if item.dry_run %} (dry run){% endif %}</span>{% endif %}
+      </div>
+      {% if editable %}
+      <p class="rounded-lg bg-indigo-50 px-3 py-2 text-xs text-indigo-800">
+        Approved emails are drip-fed by the scheduler: at most {{ status.limit }} per 24h, a random 3–7 minutes apart,
+        inside {{ status.window }}{% if status.dry_run %}. <strong>Dry-run mode:</strong> messages are written to <code>exports/outbox/</code>, nothing is sent{% endif %}.
+      </p>
+      {% endif %}
+    </div>
+
+    <footer class="flex items-center justify-end gap-2 border-t border-slate-200 px-5 py-3">
+      {% if editable and item.type == 'initial' and item.status == 'draft' %}
+      <button type="button" class="btn btn-ghost mr-auto text-xs" hx-post="/contacts/{{ item.contact_id }}/draft" hx-vals='{"regenerate": "true"}' hx-target="#modal">Regenerate</button>
+      {% endif %}
+      <button type="button" class="btn" onclick="closeModal()">Close</button>
+      {% if editable %}
+      <button type="submit" name="approve" value="false" class="btn">Save draft</button>
+      {% if item.status != 'queued' %}
+      <button type="submit" name="approve" value="true" class="btn btn-primary">Approve &amp; queue</button>
+      {% endif %}
+      {% endif %}
+    </footer>
+  </form>
+</div>

@@ -1,0 +1,24 @@
+# Core runtime (mirrors [project.dependencies] in pyproject.toml)
+fastapi>=0.110
+uvicorn>=0.29
+sqlmodel>=0.0.21
+pydantic>=2.6
+pydantic-settings>=2.7
+httpx>=0.27
+beautifulsoup4>=4.12
+jinja2>=3.1
+apscheduler>=3.10,<4
+python-multipart>=0.0.9
+fpdf2>=2.7
+tzdata; sys_platform == "win32"
+
+# Optional extras -- uncomment what you need
+# google-api-python-client>=2.100   # EMAIL_BACKEND=gmail_api
+# google-auth-oauthlib>=1.2
+# google-auth-httplib2>=0.2
+# typst>=0.11                       # headless Typst fallback when LaTeX is missing
+# dnspython>=2.6                    # MX checks on discovered domains
+
+# Development
+pytest>=8
+aiosmtpd>=1.4

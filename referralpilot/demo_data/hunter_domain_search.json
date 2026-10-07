@@ -1,0 +1,62 @@
+{
+  "data": {
+    "domain": "{domain}",
+    "disposable": false,
+    "webmail": false,
+    "accept_all": false,
+    "pattern": "{first}.{last}",
+    "organization": "{company}",
+    "emails": [
+      {
+        "value": "rahul.verma@{domain}",
+        "type": "personal",
+        "confidence": 94,
+        "first_name": "Rahul",
+        "last_name": "Verma",
+        "position": "Software Engineer",
+        "seniority": "junior",
+        "department": "it",
+        "linkedin": "https://www.linkedin.com/in/rahul-verma-demo",
+        "verification": {
+          "date": "2026-09-01",
+          "status": "valid"
+        }
+      },
+      {
+        "value": "ananya.iyer@{domain}",
+        "type": "personal",
+        "confidence": 91,
+        "first_name": "Ananya",
+        "last_name": "Iyer",
+        "position": "Technical Recruiter",
+        "seniority": null,
+        "department": "hr",
+        "linkedin": null,
+        "verification": {
+          "date": "2026-09-01",
+          "status": "valid"
+        }
+      },
+      {
+        "value": "careers@{domain}",
+        "type": "generic",
+        "confidence": 80,
+        "first_name": null,
+        "last_name": null,
+        "position": null,
+        "seniority": null,
+        "department": null,
+        "linkedin": null,
+        "verification": null
+      }
+    ]
+  },
+  "meta": {
+    "results": 3,
+    "limit": 10,
+    "offset": 0,
+    "params": {
+      "domain": "{domain}"
+    }
+  }
+}

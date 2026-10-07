@@ -1,0 +1,38 @@
+{
+  "_note": "Regular expressions (case-insensitive) applied to job titles. Remove an exclude pattern to widen the search; set exclude_level_two=false to keep 'Software Engineer II' / 'SDE-2' roles. Years-of-experience and location limits live in .env (MAX_REQUIRED_YEARS, LOCATION_KEYWORDS).",
+  "exclude_level_two": true,
+  "title_include": [
+    "\\bsoftware\\s+(?:development\\s+)?engineer",
+    "\\bsoftware\\s+developer",
+    "\\bsde\\b",
+    "\\bswe\\b",
+    "\\bback[\\s-]?end\\b.*\\b(?:developer|engineer)",
+    "\\bfront[\\s-]?end\\b.*\\b(?:developer|engineer)",
+    "\\bfull[\\s-]?stack\\b.*\\b(?:developer|engineer)",
+    "\\bgraduate\\s+(?:software\\s+)?(?:engineer|developer)",
+    "\\b(?:associate|junior|jr\\.?|entry[\\s-]level)\\s+(?:software\\s+)?(?:developer|engineer)",
+    "\\b(?:python|java|golang|go|node(?:\\.?js)?|react(?:\\.?js)?|javascript|typescript|web|android|ios|mobile|application|platform)\\s+(?:developer|engineer)",
+    "\\bengineer\\s*[-\u2013]?\\s*(?:i|1)\\b"
+  ],
+  "title_exclude": [
+    "\\bsenior\\b",
+    "\\bsr\\b",
+    "\\bstaff\\b",
+    "\\blead\\b",
+    "\\bprincipal\\b",
+    "\\bmanager\\b",
+    "\\bmanagement\\b",
+    "\\bdirector\\b",
+    "\\bhead\\s+of\\b",
+    "\\bvp\\b",
+    "\\bvice\\s+president\\b",
+    "\\barchitect\\b",
+    "\\bdistinguished\\b",
+    "\\bfellow\\b",
+    "\\bchief\\b",
+    "\\bexpert\\b",
+    "\\b(?:iii|iv)\\b",
+    "\\b(?:engineer|developer|sde|swe)\\s*[-\u2013]?\\s*(?:v|[3-9])\\b",
+    "\\b(?:l|ic)[5-9]\\b"
+  ]
+}
