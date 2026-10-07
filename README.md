@@ -63,7 +63,8 @@ send window, nothing sent without approval, opt-outs suppressed forever.
 deployment* and set *Source* to **GitHub Actions**, then run *Actions → GitHub Pages → Run workflow*.
 The workflow (`.github/workflows/pages.yml`) runs the tests, crawls every board in
 `config/companies.json`, builds the site, smoke-tests it in Chrome and deploys it — and repeats the
-crawl every 6 hours.
+crawl every 6 hours. (GitHub pauses scheduled workflows after 60 days without commits; re-enable it
+from the Actions tab if the job list stops refreshing.)
 
 **Sending real email from the browser (optional):** the page needs your own Google OAuth client.
 
