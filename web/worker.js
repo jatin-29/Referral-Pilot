@@ -1,13 +1,15 @@
 /* ReferralPilot browser edition - the Web Worker that runs the Python app.
  *
  * Loads Pyodide and the referralpilot package, keeps the SQLite database and
- * generated files on an IndexedDB-backed file system (/data), serves the
+ * generated files on an IndexedDB-backed file system, serves the
  * page's requests through referralpilot.web.handle() and runs the timers that
  * a local install gets from APScheduler. Every call into Python runs to
  * completion before the next one starts.
  */
 
-const DATA_DIR = "/data";
+// The IndexedDB database is named after this mount point. All project pages of one GitHub
+// user share an origin, so it must not be a generic name another app could also use.
+const DATA_DIR = "/referralpilot-data";
 const DB_FILE = `${DATA_DIR}/db/referralpilot.db`;
 const SEND_EVERY_MS = 30_000;
 const PERIODIC_EVERY_MS = 60_000;
@@ -57,7 +59,7 @@ function dbStamp() {
   }
 }
 
-/** Persist /data to IndexedDB soon (coalesced, and never while Python is running). */
+/** Persist the data directory to IndexedDB soon (coalesced, never while Python is running). */
 function scheduleSync() {
   if (syncQueued) return;
   syncQueued = true;
