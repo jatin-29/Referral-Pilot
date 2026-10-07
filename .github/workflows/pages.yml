@@ -4,7 +4,9 @@ name: GitHub Pages
 # visitor's browser (Python on WebAssembly). Scheduled runs re-crawl the job boards every
 # 6 hours and republish jobs.json, so the site always has fresh postings.
 #
-# One-time setup: Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+# Publishing: when Settings -> Pages -> Source is "GitHub Actions" the deploy job publishes the
+# build directly; otherwise every run pushes it to the gh-pages branch, which Pages serves with
+# Source "Deploy from a branch" (gh-pages, / root).
 
 on:
   push:
@@ -16,8 +18,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -27,8 +27,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: write  # updates the gh-pages branch when Pages serves from a branch
+      pages: read
     outputs:
-      pages_enabled: ${{ steps.pages.outputs.enabled }}
+      pages_mode: ${{ steps.pages.outputs.mode }}
     steps:
       - uses: actions/checkout@v4
 
@@ -103,43 +106,61 @@ jobs:
           path: web-smoke
           if-no-files-found: ignore
 
-      - name: Check that GitHub Pages is enabled
+      - name: How does GitHub Pages publish this repository?
         id: pages
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          build_type=$(curl -s -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/pages" \
-            | python -c "import json, sys; print(json.load(sys.stdin).get('build_type') or '')" 2>/dev/null || true)
-          if [ "$build_type" = "workflow" ]; then
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            if [ -n "$build_type" ]; then
-              problem="GitHub Pages publishes from a branch, not from this workflow."
-            else
-              problem="GitHub Pages is not enabled for this repository yet."
-            fi
-            echo "::warning title=Site built but not published::$problem Open Settings -> Pages and set Source to 'GitHub Actions', then re-run this workflow."
-            {
-              echo "### The site was built but not published"
-              echo "$problem Open **Settings → Pages → Build and deployment**, set **Source** to"
-              echo "**GitHub Actions**, then re-run this workflow (Actions tab → GitHub Pages → Run workflow)."
-            } >> "$GITHUB_STEP_SUMMARY"
+          site=$(curl -s -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/pages" || true)
+          mode=$(printf '%s' "$site" | jq -r 'if .build_type == "workflow" then "workflow"
+            elif .build_type == "legacy" and .source.branch == "gh-pages" and ((.source.path // "/") == "/") then "branch"
+            elif .build_type == "legacy" then "other-branch" else "off" end' 2>/dev/null || echo off)
+          mode=${mode:-off}
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          case "$mode" in
+            workflow) note="Pages publishes from GitHub Actions: the deploy job publishes this build." ;;
+            branch) note="Pages serves the gh-pages branch: this run updates it." ;;
+            other-branch) note="Pages serves a branch other than gh-pages. This run updates gh-pages; point Settings -> Pages at gh-pages (or at GitHub Actions)." ;;
+            *) note="GitHub Pages is not switched on yet. This run pushes the site to the gh-pages branch; in Settings -> Pages choose 'Deploy from a branch: gh-pages' or 'GitHub Actions'." ;;
+          esac
+          echo "$note"
+          echo "### Publishing: $mode" >> "$GITHUB_STEP_SUMMARY"
+          echo "$note" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$mode" = "off" ] || [ "$mode" = "other-branch" ]; then
+            echo "::warning title=GitHub Pages::$note"
           fi
 
       - uses: actions/configure-pages@v5
-        if: steps.pages.outputs.enabled == 'true'
+        if: steps.pages.outputs.mode == 'workflow'
 
       - uses: actions/upload-pages-artifact@v3
-        if: steps.pages.outputs.enabled == 'true'
+        if: steps.pages.outputs.mode == 'workflow'
         with:
           path: site
 
+      - name: Publish to the gh-pages branch
+        if: steps.pages.outputs.mode != 'workflow'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # One fresh commit each time: the branch only ever holds the current site.
+          cd site
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Publish ReferralPilot ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:gh-pages
+          echo "gh-pages now holds the site built from ${GITHUB_SHA::7}" >> "$GITHUB_STEP_SUMMARY"
+
   deploy:
     needs: build
-    if: needs.build.outputs.pages_enabled == 'true'
+    if: needs.build.outputs.pages_mode == 'workflow'
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

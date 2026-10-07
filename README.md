@@ -59,12 +59,12 @@ compiled to WebAssembly). The first visit downloads up to about 20 MB; later vis
 The hard limits are identical: at most 20 emails per rolling 24 hours, 3–7 minutes apart, inside your
 send window, nothing sent without approval, opt-outs suppressed forever.
 
-**Publishing your own copy (one time):** in the repository go to *Settings → Pages → Build and
-deployment* and set *Source* to **GitHub Actions**, then run *Actions → GitHub Pages → Run workflow*.
-The workflow (`.github/workflows/pages.yml`) runs the tests, crawls every board in
-`config/companies.json`, builds the site, smoke-tests it in Chrome and deploys it — and repeats the
-crawl every 6 hours. (GitHub pauses scheduled workflows after 60 days without commits; re-enable it
-from the Actions tab if the job list stops refreshing.)
+**Publishing your own copy:** the workflow (`.github/workflows/pages.yml`) runs the tests, crawls
+every board in `config/companies.json`, builds the site, smoke-tests it in Chrome, Firefox and WebKit,
+and publishes it — then repeats the crawl every 6 hours. If *Settings → Pages → Source* is **GitHub
+Actions** it deploys directly; otherwise it pushes the site to the `gh-pages` branch, which Pages
+serves with *Source: Deploy from a branch → `gh-pages` / root*. (GitHub pauses scheduled workflows
+after 60 days without commits; re-enable it from the Actions tab if the job list stops refreshing.)
 
 **Sending real email from the browser (optional):** the page needs your own Google OAuth client.
 
