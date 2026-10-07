@@ -32,6 +32,8 @@ jobs:
       pages: read
     outputs:
       pages_mode: ${{ steps.pages.outputs.mode }}
+      page_url: ${{ steps.pages.outputs.page_url }}
+      built_at: ${{ steps.pages.outputs.built_at }}
     steps:
       - uses: actions/checkout@v4
 
@@ -118,6 +120,8 @@ jobs:
             elif .build_type == "legacy" then "other-branch" else "off" end' 2>/dev/null || echo off)
           mode=${mode:-off}
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "page_url=$(printf '%s' "$site" | jq -r '.html_url // empty' 2>/dev/null || true)" >> "$GITHUB_OUTPUT"
+          echo "built_at=$(jq -r .built_at site/manifest.json)" >> "$GITHUB_OUTPUT"
           case "$mode" in
             workflow) note="Pages publishes from GitHub Actions: the deploy job publishes this build." ;;
             branch) note="Pages serves the gh-pages branch: this run updates it." ;;
@@ -167,3 +171,46 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  verify:
+    name: Check the live site
+    needs: [build, deploy]
+    # deploy is skipped when Pages serves the gh-pages branch, so this job decides for itself.
+    if: >-
+      always() && needs.build.result == 'success' && needs.build.outputs.page_url != '' &&
+      (needs.deploy.result == 'success' || needs.build.outputs.pages_mode == 'branch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Wait until the new build is live
+        env:
+          URL: ${{ needs.build.outputs.page_url }}
+          BUILT_AT: ${{ needs.build.outputs.built_at }}
+        run: |
+          url="${URL%/}/"
+          for attempt in $(seq 1 60); do
+            live=$(curl -fsS "${url}manifest.json?check=${GITHUB_RUN_ID}-${attempt}" | jq -r .built_at 2>/dev/null || true)
+            if [ "$live" = "$BUILT_AT" ]; then
+              echo "The build from $BUILT_AT is live at $url"
+              echo "### Live at $url" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error title=Site not live::$url still serves an older build (or nothing) after 10 minutes"
+          exit 1
+
+      - name: Smoke-test the live site in Chrome
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+          PW_CHANNEL: chrome
+          URL: ${{ needs.build.outputs.page_url }}
+        run: |
+          npm install --no-save --no-package-lock playwright@1
+          node scripts/web_smoke.cjs "${URL%/}/" --out web-smoke-live
