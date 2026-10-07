@@ -38,7 +38,7 @@
   <div class="stat">
     <p class="stat-label">Mode</p>
     <p class="stat-value {{ 'text-amber-600' if status.dry_run else 'text-rose-600' }}">{{ 'Dry run' if status.dry_run else 'Live' }}</p>
-    <p class="stat-hint">{{ 'saved as .eml in exports/outbox' if status.dry_run else 'sending via ' ~ status.backend|replace('_', ' ') }}</p>
+    <p class="stat-hint">{% if status.dry_run %}{{ 'kept in this browser, nothing is sent' if settings().web_mode else 'saved as .eml in exports/outbox' }}{% else %}sending via {{ 'Gmail' if status.backend == 'gmail_web' else status.backend|replace('_', ' ') }}{% if status.blocked %} · <button type="button" class="link" data-connect-gmail>connect</button>{% endif %}{% endif %}</p>
   </div>
   <div class="stat">
     <p class="stat-label">Sent · last 24h</p>
@@ -48,7 +48,7 @@
   <div class="stat">
     <p class="stat-label">Next send</p>
     <p class="stat-value text-lg">
-      {% if status.paused %}Paused{% elif not status.in_window %}{{ status.next_window_at|due }}{% elif status.capacity_frees_at %}{{ status.capacity_frees_at|due }}{% elif status.next_send_at and status.next_send_at > now %}{{ status.next_send_at|ago }}{% elif status.queued %}within 30s{% else %}—{% endif %}
+      {% if status.paused %}Paused{% elif status.blocked %}Gmail not connected{% elif not status.in_window %}{{ status.next_window_at|due }}{% elif status.capacity_frees_at %}{{ status.capacity_frees_at|due }}{% elif status.next_send_at and status.next_send_at > now %}{{ status.next_send_at|ago }}{% elif status.queued %}within 30s{% else %}—{% endif %}
     </p>
     <p class="stat-hint">{{ status.pause_reason or ('window ' ~ status.window) }}</p>
   </div>

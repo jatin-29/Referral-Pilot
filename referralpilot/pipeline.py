@@ -6,16 +6,21 @@ Each function opens its own transaction(s), so callers never juggle sessions.
 from __future__ import annotations
 
 import threading
+from collections.abc import Iterator
+from contextlib import nullcontext
 
 import httpx
 
 from .activity import get_logger
 from .config import get_settings
 from .db import session_scope
+from .fetch import build_client
 from .harvester import HarvestStats, harvest
+from .harvester.service import Fallback, harvest_iter
 from .models import Job, ReferralContact
 from .outreach.service import create_draft
 from .prospector import ProspectResult, prospect_job
+from .runtime import run_in_background
 from .tailor import TailorOutcome, analyze_job, tailor_job
 
 log = get_logger("app")
@@ -27,16 +32,54 @@ class PipelineError(RuntimeError):
     pass
 
 
+def _snapshot_fallback(client: httpx.Client) -> Fallback | None:
+    """Browser build: boards the browser may not call (CORS) fall back to the scheduled crawl."""
+    settings = get_settings()
+    if not (settings.web_mode and settings.site_url):
+        return None
+    from .harvester.snapshot import LazySnapshot
+
+    return LazySnapshot(client, settings.site_url.rstrip("/") + "/jobs.json")
+
+
 def run_harvest(company_ids: list[int] | None = None, *, client: httpx.Client | None = None) -> list[HarvestStats]:
     """Harvest, then score (and optionally tailor) every newly discovered job."""
     if not _harvest_lock.acquire(blocking=False):
         raise PipelineError("A harvest is already running")
     try:
-        stats = harvest(company_ids, client=client)
+        with build_client() if client is None else nullcontext(client) as http:
+            stats = harvest(company_ids, client=http, fallback=_snapshot_fallback(http))
     finally:
         _harvest_lock.release()
     process_new_jobs([job_id for result in stats for job_id in result.new_job_ids])
     return stats
+
+
+def start_harvest(company_ids: list[int] | None = None) -> None:
+    """Run a harvest in the background (the dashboard's "Harvest now")."""
+    if not _harvest_lock.acquire(blocking=False):
+        raise PipelineError("A harvest is already running")
+    try:
+        run_in_background(_harvest_job, company_ids)
+    except BaseException:
+        _harvest_lock.release()
+        raise
+
+
+def _harvest_job(company_ids: list[int] | None) -> Iterator[HarvestStats]:
+    """Background harvest. Yields after each company so the browser build can serve page
+    requests in between; the lock taken by start_harvest() is released at the end."""
+    new_ids: list[int] = []
+    try:
+        with build_client() as client:
+            for result in harvest_iter(company_ids, client=client, fallback=_snapshot_fallback(client)):
+                new_ids += result.new_job_ids
+                yield result
+    except Exception as exc:
+        log.exception("Harvest failed: %s", exc)
+    finally:
+        _harvest_lock.release()
+    process_new_jobs(new_ids)
 
 
 def harvest_running() -> bool:

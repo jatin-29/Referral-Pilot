@@ -1,7 +1,10 @@
 {% if status.dry_run %}
-<span class="pill bg-amber-100 text-amber-800 ring-amber-200" title="Emails are written to exports/outbox as .eml files">Dry run</span>
+<span class="pill bg-amber-100 text-amber-800 ring-amber-200" title="{{ 'Emails stay in the outbox in this browser - nothing is sent' if settings().web_mode else 'Emails are written to exports/outbox as .eml files' }}">Dry run</span>
 {% else %}
-<span class="pill bg-rose-100 text-rose-800 ring-rose-200" title="Emails are really sent">Live · {{ status.backend|replace('_', ' ') }}</span>
+<span class="pill bg-rose-100 text-rose-800 ring-rose-200" title="Emails are really sent">Live · {{ 'Gmail' if status.backend == 'gmail_web' else status.backend|replace('_', ' ') }}</span>
+{% endif %}
+{% if status.blocked %}
+<button type="button" class="pill bg-rose-50 text-rose-700 ring-rose-200 hover:bg-rose-100" data-connect-gmail title="{{ status.blocked }}">Connect Gmail</button>
 {% endif %}
 <span class="pill bg-white text-slate-700 ring-slate-200" title="Hard limit: {{ status.limit }} emails per rolling 24 hours">
   <span><span class="font-semibold">{{ status.sent_24h }}</span>/{{ status.limit }}</span> sent · 24h

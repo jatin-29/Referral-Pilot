@@ -119,10 +119,38 @@ def job_detail(session: Session, job: Job) -> dict:
         "links": search_links(ctx),
         "has_pdf": bool(job.resume_pdf_path and Path(job.resume_pdf_path).exists()),
         "has_tex": bool(job.resume_tex_path and Path(job.resume_tex_path).exists()),
+        "tex_source": _read_text(job.resume_tex_path),
         "breakdown": (job.match_details or {}).get("breakdown", {}),
         "ranked_projects": (job.match_details or {}).get("projects", [])[:3],
         "stale": stale,
     }
+
+
+def _read_text(path: str | None, limit: int = 200_000) -> str | None:
+    """Small text files shown inline (the LaTeX source posted to Overleaf)."""
+    if not path or not Path(path).exists():
+        return None
+    text = Path(path).read_text(encoding="utf-8", errors="replace")
+    return text if len(text) <= limit else None
+
+
+def browser_timers(session: Session) -> list[dict]:
+    """Next runs of the browser build's timers (they only tick while the tab is open)."""
+    from ..config import get_settings
+    from ..db import state_get_datetime
+
+    settings = get_settings()
+    timers = [
+        ("harvest", "Crawl job boards", timedelta(hours=settings.harvest_interval_hours)),
+        ("replies", "Check replies", timedelta(minutes=settings.reply_check_interval_minutes)),
+        ("followups", "Queue follow-ups", timedelta(hours=1)),
+        ("prune", "Prune activity log", timedelta(hours=24)),
+    ]
+    rows = [{"id": "send_tick", "name": "Send next queued email", "next_run": utcnow() + timedelta(seconds=30)}]
+    for key, name, interval in timers:
+        last = state_get_datetime(session, f"web:last_{key}")
+        rows.append({"id": key, "name": name, "next_run": (last + interval) if last else utcnow()})
+    return rows
 
 
 def queue_etas(status: QueueStatus, count: int, now: datetime) -> list[datetime | None]:

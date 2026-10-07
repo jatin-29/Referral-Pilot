@@ -75,7 +75,7 @@ class Settings(BaseSettings):
     verify_mx: bool = True
 
     # --- outreach ---
-    email_backend: Literal["dry_run", "smtp", "gmail_api"] = "dry_run"
+    email_backend: Literal["dry_run", "smtp", "gmail_api", "gmail_web"] = "dry_run"
     sender_name: str = ""
     sender_email: str = ""
     smtp_host: str = "smtp.gmail.com"
@@ -112,6 +112,20 @@ class Settings(BaseSettings):
     ui_tailwind_cdn: bool = False
     # Serve every outbound HTTP call from the bundled mock API responses (offline demo).
     demo_mode: bool = False
+
+    # --- browser build (GitHub Pages) ---
+    # Set by referralpilot.web when the app runs inside the browser (Pyodide): no threads,
+    # no sockets, no LaTeX; storage is the browser's IndexedDB.
+    web_mode: bool = False
+    # Base URL of the hosted site; the scheduled crawl publishes <site_url>/jobs.json.
+    site_url: str = ""
+    # OAuth client ID ("Web application") that lets the browser build send through the Gmail API.
+    gmail_client_id: str = ""
+    # Opt-in relay for APIs that refuse browser (CORS) requests, e.g. "https://corsproxy.io/?url={url}".
+    # The relay sees those requests, including API keys in their URLs.
+    cors_proxy: str = ""
+    # SQLite write-ahead logging (the browser's virtual file system cannot memory-map it).
+    sqlite_wal: bool = True
 
     @field_validator("location_keywords", "contact_providers", mode="before")
     @classmethod

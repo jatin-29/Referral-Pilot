@@ -22,7 +22,7 @@
         <span>ReferralPilot</span>
       </a>
       <nav class="-mx-1 flex max-w-full items-center gap-1 overflow-x-auto text-sm">
-        {% for key, href, text in [("board", "/", "Board"), ("outbox", "/outbox", "Outbox"), ("companies", "/companies", "Companies"), ("profile", "/profile", "Profile"), ("logs", "/logs", "Activity")] %}
+        {% for key, href, text in [("board", "/", "Board"), ("outbox", "/outbox", "Outbox"), ("companies", "/companies", "Companies"), ("profile", "/profile", "Profile"), ("logs", "/logs", "Activity"), ("settings", "/settings", "Settings")] %}
         <a href="{{ href }}" class="rounded-md px-3 py-1.5 {{ 'bg-slate-100 font-medium text-slate-900' if page == key else 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">{{ text }}</a>
         {% endfor %}
       </nav>

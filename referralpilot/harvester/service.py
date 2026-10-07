@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 
 import httpx
@@ -31,6 +32,10 @@ HARVESTERS: dict[str, type[Harvester]] = {
 }
 
 _UPDATABLE_FIELDS = ("title", "url", "location", "department", "employment_type", "description", "posted_at")
+
+# Postings to use when a board cannot be fetched live (the browser build falls back to the
+# scheduled crawl's jobs.json): returns (jobs, label) or None when there is nothing to offer.
+Fallback = Callable[[Company], "tuple[list[RawJob], str] | None"]
 
 
 @dataclass
@@ -116,6 +121,7 @@ def harvest_company(
     *,
     client: httpx.Client,
     job_filter: JobFilter,
+    fallback: Fallback | None = None,
 ) -> HarvestStats:
     stats = HarvestStats(company=company.name, ats_type=company.ats_type)
     harvester_cls = HARVESTERS.get(company.ats_type)
@@ -123,16 +129,33 @@ def harvest_company(
         stats.error = f"unsupported ATS {company.ats_type!r}"
         return stats
 
+    source = ""
     try:
         raw_jobs = harvester_cls(client).fetch(target_for(company), title_prefilter=job_filter.title_ok)
     except (FetchError, httpx.HTTPError, ValueError, KeyError) as exc:
-        stats.error = str(exc)
-        company.last_harvested_at = utcnow()
-        company.last_harvest_status = f"error: {exc}"[:250]
-        session.add(company)
-        log.warning("%s (%s/%s): harvest failed - %s", company.name, company.ats_type, company.board_token, exc)
-        return stats
+        offered = fallback(company) if fallback else None
+        if offered is None:
+            stats.error = str(exc)
+            company.last_harvested_at = utcnow()
+            company.last_harvest_status = f"error: {exc}"[:250]
+            session.add(company)
+            log.warning("%s (%s/%s): harvest failed - %s", company.name, company.ats_type, company.board_token, exc)
+            return stats
+        raw_jobs, source = offered
+        log.info("%s: %s could not be reached live (%s) - using %s", company.name, company.ats_type,
+                 type(exc).__name__, source)
 
+    store_raw_jobs(session, company, raw_jobs, job_filter, stats)
+    company.last_harvested_at = utcnow()
+    company.last_harvest_status = (stats.summary() + (f" ({source})" if source else ""))[:250]
+    session.add(company)
+    log.info("%s (%s): %s%s", company.name, company.ats_type, stats.summary(), f" - {source}" if source else "")
+    return stats
+
+
+def store_raw_jobs(session: Session, company: Company, raw_jobs: list[RawJob], job_filter: JobFilter,
+                   stats: HarvestStats) -> None:
+    """Filter postings and upsert the matching ones, counting what happened in `stats`."""
     stats.fetched = len(raw_jobs)
     for raw in raw_jobs:
         decision = job_filter.evaluate(raw)
@@ -150,24 +173,19 @@ def harvest_company(
         elif changed:
             stats.updated += 1
 
-    company.last_harvested_at = utcnow()
-    company.last_harvest_status = stats.summary()
-    session.add(company)
-    log.info("%s (%s): %s", company.name, company.ats_type, stats.summary())
-    return stats
 
-
-def harvest(
+def harvest_iter(
     company_ids: list[int] | None = None,
     *,
     client: httpx.Client | None = None,
     job_filter: JobFilter | None = None,
-) -> list[HarvestStats]:
-    """Crawl every enabled company (or the given ids), one transaction per company."""
+    fallback: Fallback | None = None,
+) -> Iterator[HarvestStats]:
+    """Crawl every enabled company (or the given ids), yielding after each one (own transaction)."""
     job_filter = job_filter or JobFilter.from_settings()
     own_client = client is None
     client = client or build_client(get_settings())
-    results: list[HarvestStats] = []
+    total_new = done = 0
     try:
         with session_scope() as session:
             stmt = select(Company).order_by(col(Company.id))
@@ -181,10 +199,22 @@ def harvest(
         for company in company_list:
             with session_scope() as session:
                 company = session.merge(company)
-                results.append(harvest_company(session, company, client=client, job_filter=job_filter))
+                result = harvest_company(session, company, client=client, job_filter=job_filter, fallback=fallback)
+            total_new += result.new
+            done += 1
+            yield result
     finally:
         if own_client:
             client.close()
-    total_new = sum(r.new for r in results)
-    log.info("Harvest finished: %d companies, %d new matching roles", len(results), total_new)
-    return results
+    log.info("Harvest finished: %d companies, %d new matching roles", done, total_new)
+
+
+def harvest(
+    company_ids: list[int] | None = None,
+    *,
+    client: httpx.Client | None = None,
+    job_filter: JobFilter | None = None,
+    fallback: Fallback | None = None,
+) -> list[HarvestStats]:
+    """Crawl every enabled company (or the given ids), one transaction per company."""
+    return list(harvest_iter(company_ids, client=client, job_filter=job_filter, fallback=fallback))

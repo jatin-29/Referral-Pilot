@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
+
+from sqlalchemy import func
 from sqlmodel import Session, col, select
 
 from ..activity import get_logger
@@ -110,6 +113,49 @@ def approve(session: Session, item: OutreachLog) -> OutreachLog:
         advance_job_status(job, JobStatus.QUEUED)
         session.add(job)
     log.info("Queued %s email to %s", item.type, item.to_email, extra={"job_id": item.job_id})
+    return item
+
+
+def mark_sent_manually(session: Session, item: OutreachLog) -> OutreachLog:
+    """The user sent this email from their own mail client ("Open in Gmail"): record it.
+
+    It counts toward the same 20-per-24h limit as queued sends.
+    """
+    if item.status not in (*PENDING, OutreachStatus.FAILED):
+        raise OutreachError(f"Email is already {item.status}")
+    contact = session.get(ReferralContact, item.contact_id)
+    if contact is None or contact.status in CONTACT_DO_NOT_EMAIL:
+        raise OutreachError("Contact is opted out / bounced")
+    if session.get(Suppression, item.to_email.lower()) is not None:
+        raise OutreachError(f"{item.to_email} opted out or bounced earlier; it is on the suppression list")
+    now = utcnow()
+    limit = get_settings().daily_send_limit
+    sent_24h = session.exec(
+        select(func.count()).select_from(OutreachLog).where(
+            OutreachLog.status == OutreachStatus.SENT,
+            OutreachLog.dry_run == False,  # noqa: E712
+            OutreachLog.sent_at > now - timedelta(hours=24),
+        )
+    ).one()
+    if sent_24h >= limit:
+        raise OutreachError(f"Daily limit reached ({sent_24h}/{limit} in 24h) - send this one later")
+    followup = item.type == OutreachType.FOLLOWUP
+    item.status = OutreachStatus.SENT
+    item.sent_at = now
+    item.dry_run = False
+    item.error = None
+    item.updated_at = now
+    session.add(item)
+    if contact.status not in (ContactStatus.REPLIED, ContactStatus.REFERRED):
+        contact.status = ContactStatus.FOLLOWUP_SENT if followup else ContactStatus.CONTACTED
+        contact.updated_at = now
+        session.add(contact)
+    job = session.get(Job, item.job_id)
+    if job is not None:
+        advance_job_status(job, JobStatus.FOLLOWUP_SENT if followup else JobStatus.CONTACTED)
+        session.add(job)
+    log.info("Recorded %s email to %s as sent manually (%d/%d in 24h)", "follow-up" if followup else "referral",
+             item.to_email, sent_24h + 1, limit, extra={"job_id": item.job_id})
     return item
 
 

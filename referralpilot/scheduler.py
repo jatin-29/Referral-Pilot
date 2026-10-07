@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
 
-from apscheduler.schedulers.background import BackgroundScheduler
 from sqlalchemy import func
 from sqlmodel import select
 
@@ -15,6 +15,9 @@ from .models import Company, utcnow
 from .outreach.followups import scan_followups, scan_replies
 from .pipeline import PipelineError, run_harvest
 from .runtime import get_queue, new_reply_checker
+
+if TYPE_CHECKING:  # APScheduler is not installed in the browser build
+    from apscheduler.schedulers.background import BackgroundScheduler
 
 log = get_logger("scheduler")
 
@@ -79,6 +82,8 @@ def _first_harvest_at(interval: timedelta) -> datetime:
 
 
 def build_scheduler() -> BackgroundScheduler:
+    from apscheduler.schedulers.background import BackgroundScheduler
+
     settings = get_settings()
     scheduler = BackgroundScheduler(
         timezone=settings.tz,

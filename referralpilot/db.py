@@ -20,7 +20,7 @@ _engine_lock = threading.Lock()
 
 def _sqlite_pragmas(dbapi_connection, _record) -> None:
     cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA journal_mode=WAL")
+    cursor.execute("PRAGMA journal_mode=WAL" if get_settings().sqlite_wal else "PRAGMA journal_mode=DELETE")
     cursor.execute("PRAGMA synchronous=NORMAL")
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.execute("PRAGMA busy_timeout=30000")

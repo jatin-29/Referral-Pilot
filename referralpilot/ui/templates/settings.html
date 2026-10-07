@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Settings · ReferralPilot{% endblock %}
+{% block content %}
+<div class="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-3">
+  <div class="lg:col-span-2">
+    <h1 class="text-2xl font-semibold text-slate-900">Settings</h1>
+    {% if editable %}
+    <p class="mt-1 text-sm text-slate-500">Saved in this browser only, together with your jobs, contacts and emails. The hard limits (20 emails per 24h, at least 3 minutes apart) cannot be raised.</p>
+    {% else %}
+    <p class="mt-1 text-sm text-slate-500">A local install reads these from <code>.env</code> (see <code>.env.example</code>); edit that file and restart <code>referralpilot serve</code> to change them.</p>
+    {% endif %}
+    {% include "partials/settings_form.html" %}
+  </div>
+
+  <aside class="space-y-4">
+    {% if editable %}
+    <div class="rounded-xl border border-slate-200 bg-white p-4">
+      <p class="section-title">Gmail</p>
+      <p class="mt-2 text-sm text-slate-600" data-gmail-status>Not connected.</p>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <button type="button" class="btn btn-sm btn-primary" data-connect-gmail>Connect Gmail</button>
+        <button type="button" class="btn btn-sm" data-disconnect-gmail>Disconnect</button>
+      </div>
+      <p class="mt-3 text-xs text-slate-500">Set <b>Sending mode</b> to <code>gmail_web</code> and paste your OAuth client ID first. Google signs you in inside a pop-up and gives this tab a token that lasts about an hour; it is never stored. Emails only go out while this tab is open.</p>
+    </div>
+
+    <div class="rounded-xl border border-slate-200 bg-white p-4">
+      <p class="section-title">Your data</p>
+      <p class="mt-2 text-sm text-slate-600">Everything lives in this browser's storage. Download a backup to move it to another browser or device.</p>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <a class="btn btn-sm" href="/settings/backup.db" download>Download backup</a>
+        <label class="btn btn-sm cursor-pointer">Restore backup…<input type="file" accept=".db,.sqlite,application/vnd.sqlite3" class="hidden" data-restore-backup></label>
+        <button type="button" class="btn btn-sm text-rose-600" hx-post="/settings/reset" hx-swap="none"
+                hx-confirm="Delete every job, contact, email and setting in this browser?">Reset everything</button>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+      <p class="section-title">How the browser edition works</p>
+      <ul class="mt-2 list-disc space-y-1 pl-5">
+        <li>The whole app runs inside this tab (Python compiled to WebAssembly); nothing you enter is uploaded anywhere.</li>
+        <li>Job boards are crawled every few hours by a scheduled GitHub Action, and live from the browser for boards that allow it.</li>
+        <li>Timers (sending, follow-ups, reply checks) only run while the tab is open. Keep it open, pinned, on the days you send.</li>
+        <li>Resumes are built with the pure-Python PDF engine; use <b>Open in Overleaf</b> on a job for the LaTeX version.</li>
+      </ul>
+    </div>
+    {% else %}
+    <div class="rounded-xl border border-slate-200 bg-white p-4">
+      <p class="section-title">Your data</p>
+      <p class="mt-2 text-sm text-slate-600">Everything is in <code>data/referralpilot.db</code>.</p>
+      <a class="btn btn-sm mt-3" href="/settings/backup.db" download>Download backup</a>
+    </div>
+    {% endif %}
+    <div class="rounded-xl border border-slate-200 bg-white p-4">
+      <p class="section-title">Resume engines</p>
+      <ul class="mt-2 space-y-1 text-sm">
+        {% for name, ok in engines.items() %}
+        <li class="flex items-center justify-between"><span class="font-mono text-xs">{{ name }}</span>
+          <span class="chip {{ 'bg-emerald-50 text-emerald-700' if ok else 'bg-slate-100 text-slate-500' }}">{{ 'available' if ok else 'not installed' }}</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </aside>
+</div>
+{% endblock %}

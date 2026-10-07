@@ -243,6 +243,34 @@ def cmd_serve(args) -> int:
     return 0
 
 
+def cmd_export_jobs(args) -> int:
+    """Crawl the configured job boards and write their public postings to a jobs.json snapshot."""
+    import json
+    from pathlib import Path
+
+    from .db import session_scope
+    from .harvester import harvest
+    from .harvester.snapshot import export_snapshot
+    from .models import Company
+    from .seed import seed_all
+
+    _init()
+    with session_scope() as session:
+        seed_all(session)
+        ids = [c.id for c in session.exec(select(Company)).all() if args.all_companies or c.enabled]
+    results = harvest(ids) if ids else []
+    with session_scope() as session:
+        data = export_snapshot(session, results)
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    crawled = sum(1 for company in data["companies"] if company["ok"])
+    print(f"Wrote {len(data['jobs'])} jobs from {crawled}/{len(data['companies'])} boards to {out}")
+    for result in results:
+        print(f"  {result.company:32} {result.summary()}")
+    return 0
+
+
 def cmd_verify(args) -> int:
     from .verify import run_verification
 
@@ -300,6 +328,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--no-scheduler", action="store_true")
     p.add_argument("--demo", action="store_true", help="offline demo: mock APIs + demo provider keys, dry-run sending")
     p.set_defaults(func=cmd_serve)
+
+    p = sub.add_parser("export-jobs", help="crawl job boards and write public postings to jobs.json")
+    p.add_argument("--out", default="jobs.json", help="output file (default: jobs.json)")
+    p.add_argument("--all-companies", action="store_true",
+                   help="also crawl companies that are disabled in config/companies.json")
+    p.set_defaults(func=cmd_export_jobs)
 
     p = sub.add_parser("verify", help="end-to-end pipeline check in a throwaway workspace")
     p.add_argument("--live", action="store_true", help="hit the real Greenhouse/Lever APIs (falls back to mocks)")

@@ -34,7 +34,8 @@
     const status = e.detail.xhr ? e.detail.xhr.status : "?";
     toast(`Request failed (${status})`, "error");
   });
-  document.addEventListener("htmx:sendError", () => toast("Server unreachable - is `referralpilot serve` running?", "error"));
+  document.addEventListener("htmx:sendError", () =>
+    toast(window.RPWeb ? "The app is not responding - reload the page" : "Server unreachable - is `referralpilot serve` running?", "error"));
 
   // --------------------------------------------------------- drawer / modal --
   window.closeModal = function () {
@@ -119,25 +120,63 @@
     if (nearBottom) panel.scrollTop = panel.scrollHeight;
   }
 
+  let logSource = null;
+  let logTimer = null;
+
+  function onLogRow(panel, row) {
+    appendLog(panel, row);
+    if (REFRESH_SOURCES.has(row.source) && document.getElementById("board")) {
+      clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => {
+        htmx.trigger(document.body, "refreshBoard");
+        htmx.trigger(document.body, "refreshStatus");
+      }, 1500);
+    }
+  }
+
+  function stopLogStream() {
+    if (logSource) logSource.close();
+    clearTimeout(logTimer);
+    logSource = null;
+  }
+
   function initLogStream() {
+    stopLogStream();
     const panel = document.getElementById("live-log");
-    if (!panel || !window.EventSource) return;
+    if (!panel) return;
     panel.scrollTop = panel.scrollHeight;
     const params = new URLSearchParams({ backlog: panel.dataset.backlog || "40" });
-    if (window.LOG_AFTER_ID) params.set("after", window.LOG_AFTER_ID);
+    const after = panel.dataset.after || window.LOG_AFTER_ID;
+    if (after && after !== "0") params.set("after", after);
     if (panel.dataset.source) params.set("source", panel.dataset.source);
-    const source = new EventSource("/logs/stream?" + params.toString());
-    source.addEventListener("log", (event) => {
-      const row = JSON.parse(event.data);
-      appendLog(panel, row);
-      if (REFRESH_SOURCES.has(row.source) && document.getElementById("board")) {
-        clearTimeout(refreshTimer);
-        refreshTimer = setTimeout(() => {
-          htmx.trigger(document.body, "refreshBoard");
-          htmx.trigger(document.body, "refreshStatus");
-        }, 1500);
-      }
-    });
+
+    if (window.RPWeb || !window.EventSource) {
+      // The browser edition has no long-lived connections: poll for new rows instead.
+      let lastId = Number(params.get("after") || 0);
+      let started = params.has("after");
+      const poll = () => {
+        if (!document.body.contains(panel)) return;
+        const query = new URLSearchParams(params);
+        if (started) query.set("after", String(lastId));
+        fetch("/logs/poll?" + query.toString(), { headers: { "HX-Request": "true" } })
+          .then((response) => response.json())
+          .then((data) => {
+            started = true;
+            for (const row of data.rows || []) {
+              lastId = Math.max(lastId, row.id);
+              onLogRow(panel, row);
+            }
+          })
+          .catch(() => {})
+          .finally(() => {
+            if (document.body.contains(panel)) logTimer = setTimeout(poll, 2000);
+          });
+      };
+      poll();
+      return;
+    }
+    logSource = new EventSource("/logs/stream?" + params.toString());
+    logSource.addEventListener("log", (event) => onLogRow(panel, JSON.parse(event.data)));
   }
 
   window.toggleLogDock = function () {
@@ -148,11 +187,64 @@
     if (hint) hint.textContent = panel.classList.contains("hidden") ? "show" : "hide";
   };
 
+  // --------------------------------------------------- send it yourself -----
+  function composeUrl(form, kind) {
+    const value = (name) => (form.querySelector(`[name="${name}"]`) || {}).value || "";
+    const to = value("to_email"), subject = value("subject"), body = value("body");
+    if (kind === "mailto") {
+      return `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    }
+    const params = new URLSearchParams({ view: "cm", fs: "1", to, su: subject, body });
+    return "https://mail.google.com/mail/?" + params.toString();
+  }
+
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-compose]");
+    if (!button) return;
+    const form = button.closest("form");
+    if (!form) return;
+    window.open(composeUrl(form, button.dataset.compose), "_blank", "noopener");
+  });
+
+  // ------------------------------------------------------- backups ----------
+  document.addEventListener("change", (event) => {
+    const input = event.target.closest("input[data-restore-backup]");
+    if (!input || !input.files || !input.files[0]) return;
+    const file = input.files[0];
+    input.value = "";
+    if (!window.confirm(`Replace everything in this browser with the backup "${file.name}"?`)) return;
+    fetch("/settings/restore", {
+      method: "POST",
+      headers: { "HX-Request": "true", "Content-Type": "application/octet-stream" },
+      body: file,
+    }).then((response) => {
+      const trigger = JSON.parse(response.headers.get("HX-Trigger") || "{}");
+      if (trigger.toast) toast(trigger.toast.message, trigger.toast.kind);
+      if (trigger.reloadPage) reloadPage();
+    }).catch(() => toast("Restore failed", "error"));
+  });
+
+  function reloadPage() {
+    if (window.RPWeb) window.RPWeb.reload();
+    else window.location.reload();
+  }
+  document.addEventListener("reloadPage", reloadPage);
+
+  // Re-run after a page is rendered without a full load (the browser edition swaps pages itself).
+  window.RPApp = {
+    init(root) {
+      initBoard(root);
+      initCounters(root);
+      initLogStream();
+    },
+    stop: stopLogStream,
+  };
+
   document.addEventListener("DOMContentLoaded", () => {
     htmx.onLoad((el) => {
       initBoard(el);
       initCounters(el);
     });
-    initLogStream();
+    if (!window.RPWeb) initLogStream();
   });
 })();

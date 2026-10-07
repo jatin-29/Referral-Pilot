@@ -80,9 +80,19 @@
         <div class="mt-2 flex flex-wrap items-center gap-3 rounded-lg bg-slate-50 px-3 py-2 text-sm">
           <span class="break-all font-medium text-slate-700">{{ job.resume_pdf_path|basename }}</span>
           <span class="text-xs text-slate-500">{{ job.resume_engine }} · {{ job.tailored_at|ago }}</span>
-          <span class="ml-auto flex gap-2">
+          <span class="ml-auto flex flex-wrap items-center gap-x-3 gap-y-1">
             <a class="link" href="/jobs/{{ job.id }}/resume.pdf" target="_blank" rel="noopener">View PDF</a>
+            <a class="link" href="/jobs/{{ job.id }}/resume.pdf" download>Download</a>
             {% if has_tex %}<a class="link" href="/jobs/{{ job.id }}/resume.tex" target="_blank" rel="noopener">LaTeX source</a>{% endif %}
+            {% if tex_source %}
+            <form action="https://www.overleaf.com/docs" method="post" target="_blank" class="inline">
+              <textarea name="snip" class="hidden" aria-hidden="true">
+{{ tex_source }}</textarea>
+              <input type="hidden" name="snip_name" value="{{ job.company }} {{ job.title }} resume">
+              <input type="hidden" name="engine" value="pdflatex">
+              <button class="link" title="Compile the LaTeX version in Overleaf (free account)">Open in Overleaf ↗</button>
+            </form>
+            {% endif %}
           </span>
         </div>
         {% if ranked_projects %}
@@ -91,7 +101,7 @@
         </p>
         {% endif %}
         {% else %}
-        <p class="mt-2 text-sm text-slate-500">One click renders <code>templates/base_resume.tex</code> with skills and projects re-ranked for this job and compiles it (pdflatex → Typst → pure-Python fallback).</p>
+        <p class="mt-2 text-sm text-slate-500">One click renders <code>templates/base_resume.tex</code> with skills and projects re-ranked for this job and compiles it ({{ 'pure-Python PDF in the browser, LaTeX via Overleaf' if settings().web_mode else 'pdflatex → Typst → pure-Python fallback' }}).</p>
         {% endif %}
       </section>
 

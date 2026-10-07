@@ -1,4 +1,4 @@
-"""Email transport: dry-run (.eml files), authenticated SMTP, or the Gmail API."""
+"""Email transport: dry-run (.eml files), authenticated SMTP, or the Gmail API (desktop or browser)."""
 
 from __future__ import annotations
 
@@ -88,6 +88,15 @@ class Sender(ABC):
 
     @abstractmethod
     def send(self, message: EmailMessage, *, thread_id: str | None = None) -> SendResult: ...
+
+    def blocked_reason(self) -> str | None:
+        """Why nothing can be sent right now (e.g. not signed in); queued emails then wait."""
+        return None
+
+    @property
+    def account_email(self) -> str | None:
+        """The mailbox this sender is signed in to, when it knows (used for the From line)."""
+        return None
 
 
 class DryRunSender(Sender):
@@ -209,4 +218,8 @@ def build_sender(settings: Settings | None = None) -> Sender:
         from .gmail import build_service
 
         return GmailAPISender(lambda: build_service(settings))
+    if settings.email_backend == "gmail_web":
+        from .gmail_web import GmailWebSender
+
+        return GmailWebSender()
     return DryRunSender(settings.outbox_dir)

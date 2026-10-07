@@ -3,6 +3,8 @@
 Records are pushed through a queue and written by a background thread, so a
 log call made while the caller holds an open SQLite write transaction can
 never deadlock against its own lock. The dashboard tails the table over SSE.
+Runtimes without threads (the browser build) use persist="buffer": records are
+kept in memory and written by `flush_logging()` once the request has finished.
 """
 
 from __future__ import annotations
@@ -21,6 +23,7 @@ _CONSOLE_FORMAT = "%(asctime)s %(levelname)-7s [%(source)s] %(message)s"
 
 _listener: QueueListener | None = None
 _queue: queue.Queue | None = None
+_buffer: list[logging.LogRecord] | None = None
 _installed: list[logging.Handler] = []
 
 
@@ -57,27 +60,46 @@ class _ShortFormatter(logging.Formatter):
 
 class _DBWriter(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:
+        self.write_many([record])
+
+    @staticmethod
+    def write_many(records: list[logging.LogRecord]) -> None:
         from .db import get_engine
         from .models import ActivityLog
 
         try:
             with Session(get_engine()) as session:
-                session.add(
-                    ActivityLog(
-                        level=record.levelname,
-                        source=getattr(record, "source", "app") or "app",
-                        message=record.getMessage()[:4000],
-                        job_id=getattr(record, "job_id", None),
+                for record in records:
+                    session.add(
+                        ActivityLog(
+                            level=record.levelname,
+                            source=getattr(record, "source", "app") or "app",
+                            message=record.getMessage()[:4000],
+                            job_id=getattr(record, "job_id", None),
+                        )
                     )
-                )
                 session.commit()
         except Exception as exc:  # never recurse into logging from a log handler
             sys.stderr.write(f"[referralpilot] could not persist activity log: {exc}\n")
 
 
-def setup_logging(level: str = "INFO", *, persist: bool = True, console: bool = True) -> None:
-    """Configure the `referralpilot` logger tree. Safe to call more than once."""
-    global _listener, _queue
+class _BufferHandler(QueueHandler):
+    """Collects prepared records in memory until flush_logging() writes them."""
+
+    def __init__(self, sink: list[logging.LogRecord]):
+        super().__init__(queue.SimpleQueue())
+        self.sink = sink
+
+    def enqueue(self, record: logging.LogRecord) -> None:
+        self.sink.append(record)
+
+
+def setup_logging(level: str = "INFO", *, persist: bool | str = True, console: bool = True) -> None:
+    """Configure the `referralpilot` logger tree. Safe to call more than once.
+
+    persist: True (background writer thread), "buffer" (written by flush_logging) or False.
+    """
+    global _listener, _queue, _buffer
 
     logger = logging.getLogger(ROOT_LOGGER)
     logger.setLevel(level.upper())
@@ -91,7 +113,14 @@ def setup_logging(level: str = "INFO", *, persist: bool = True, console: bool = 
         logger.addHandler(handler)
         _installed.append(handler)
 
-    if persist:
+    if persist == "buffer":
+        _buffer = []
+        buffer_handler = _BufferHandler(_buffer)
+        buffer_handler.addFilter(_SourceFilter())
+        buffer_handler.setFormatter(_ShortFormatter())
+        logger.addHandler(buffer_handler)
+        _installed.append(buffer_handler)
+    elif persist:
         _queue = queue.Queue(-1)
         queue_handler = QueueHandler(_queue)
         queue_handler.addFilter(_SourceFilter())
@@ -103,14 +132,21 @@ def setup_logging(level: str = "INFO", *, persist: bool = True, console: bool = 
 
 
 def flush_logging() -> None:
-    """Block until every queued record has been written to the database."""
+    """Write every pending record to the database (call outside open transactions)."""
     if _queue is not None and _listener is not None:
         _queue.join()
+    if _buffer:
+        records = list(_buffer)
+        _buffer.clear()
+        _DBWriter.write_many(records)
 
 
 def shutdown_logging() -> None:
-    global _listener, _queue
+    global _listener, _queue, _buffer
     logger = logging.getLogger(ROOT_LOGGER)
+    if _buffer:
+        flush_logging()
+    _buffer = None
     if _listener is not None:
         try:
             _listener.stop()  # drains the queue first

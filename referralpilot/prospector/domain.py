@@ -45,8 +45,31 @@ def domain_from_url(url: str | None) -> str | None:
     return None if domain in ATS_DOMAINS else domain
 
 
+def _has_mx_over_https(domain: str) -> bool | None:
+    """DNS-over-HTTPS lookup for the browser build, which cannot send DNS packets."""
+    import httpx
+
+    from ..fetch import build_client
+
+    try:
+        with build_client() as client:
+            response = client.get("https://dns.google/resolve", params={"name": domain, "type": "MX"})
+        data = response.json()
+    except (httpx.HTTPError, ValueError):
+        return None
+    if data.get("Status") == 3:  # NXDOMAIN
+        return False
+    if data.get("Status") != 0:
+        return None
+    return any(answer.get("type") == 15 for answer in data.get("Answer", []))
+
+
 def has_mx(domain: str, timeout: float = 4.0) -> bool | None:
     """True/False when dnspython is installed, None when the check is unavailable."""
+    from ..config import get_settings
+
+    if get_settings().web_mode:
+        return _has_mx_over_https(domain)
     try:
         import dns.exception
         import dns.resolver

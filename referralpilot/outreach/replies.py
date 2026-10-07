@@ -176,4 +176,8 @@ def build_reply_checker(settings: Settings | None = None) -> ReplyChecker:
         from .gmail import build_service
 
         return GmailReplyChecker(lambda: build_service(settings), settings.sender_email)
+    if settings.email_backend == "gmail_web":
+        from .gmail_web import GmailWebReplyChecker
+
+        return GmailWebReplyChecker(settings.sender_email)
     return NullReplyChecker()

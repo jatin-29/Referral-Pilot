@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import threading
 from pathlib import Path
 from typing import Annotated
 
@@ -31,7 +30,7 @@ from ..models import (
 )
 from ..outreach import service as outreach
 from ..outreach.queue import set_paused
-from ..pipeline import PipelineError, draft_for_contact, harvest_running, prospect, run_harvest, tailor
+from ..pipeline import PipelineError, draft_for_contact, harvest_running, prospect, start_harvest, tailor
 from ..profile import ProfileIn, apply_profile, get_active_profile, profile_to_dict
 from ..prospector.service import add_manual_contact, update_contact_email
 from ..runtime import get_queue
@@ -94,19 +93,6 @@ def drawer(request: Request, job_id: int, **kwargs) -> HTMLResponse:
         job = _job_or_404(session, job_id)
         context = views.job_detail(session, job)
         return render(request, "partials/job_drawer.html", context, **kwargs)
-
-
-def _background(target, *args) -> None:
-    threading.Thread(target=target, args=args, daemon=True).start()
-
-
-def _harvest_in_background(company_ids: list[int] | None) -> None:
-    try:
-        run_harvest(company_ids)
-    except PipelineError as exc:
-        log.info("Harvest not started: %s", exc)
-    except Exception as exc:
-        log.exception("Harvest failed: %s", exc)
 
 
 # --- pages ---------------------------------------------------------------------------
@@ -176,12 +162,14 @@ def profile_page(request: Request, session: SessionDep):
 def logs_page(request: Request, session: SessionDep, source: str | None = None):
     rows = recent_activity(session, limit=300, source=source or None)
     sources = session.exec(select(ActivityLog.source).distinct().order_by(ActivityLog.source)).all()
-    scheduler = getattr(request.app.state, "scheduler", None)
-    from ..scheduler import describe_jobs
+    if get_settings().web_mode:
+        jobs = views.browser_timers(session)
+    else:
+        from ..scheduler import describe_jobs
 
+        jobs = describe_jobs(getattr(request.app.state, "scheduler", None))
     return render(request, "logs.html", {
-        "rows": rows, "sources": sources, "source": source, "page": "logs",
-        "jobs": describe_jobs(scheduler),
+        "rows": rows, "sources": sources, "source": source, "page": "logs", "jobs": jobs,
     })
 
 
@@ -192,6 +180,19 @@ def _fetch_logs(after_id: int, limit: int = 100, source: str | None = None) -> l
         rows = recent_activity(session, after_id=after_id, limit=limit, source=source)
         return [{"id": r.id, "time": r.created_at.isoformat(), "level": r.level, "source": r.source,
                  "message": r.message, "job_id": r.job_id} for r in rows]
+
+
+@router.get("/logs/poll")
+def logs_poll(after: int | None = None, backlog: int = 40, source: str | None = None):
+    """Polling alternative to the SSE stream (the browser build cannot hold a stream open).
+
+    Without `after` it returns the latest `backlog` rows; with it, every row newer than `after`.
+    """
+    if after is None:
+        rows = _fetch_logs(0, max(0, min(backlog, 200)), source or None)
+    else:
+        rows = _fetch_logs(after, 200, source or None)
+    return JSONResponse({"rows": rows})
 
 
 @router.get("/logs/stream")
@@ -396,17 +397,21 @@ def save_outreach(
     body: Annotated[str, Form()],
     to_email: Annotated[str, Form()],
     approve: Annotated[bool, Form()] = False,
+    mark_sent: Annotated[bool, Form()] = False,
 ):
     with session_scope() as session:
         item = _outreach_or_404(session, outreach_id)
         try:
             outreach.update_draft(session, item, subject=subject, body=body, to_email=to_email)
-            if approve:
+            if mark_sent:
+                outreach.mark_sent_manually(session, item)
+            elif approve:
                 outreach.approve(session, item)
         except outreach.OutreachError as exc:
             return toast_only(str(exc))
-    if approve:
-        return render(request, "partials/empty.html", toast="Approved - queued for rate-limited sending",
+    if approve or mark_sent:
+        message = "Recorded as sent" if mark_sent else "Approved - queued for rate-limited sending"
+        return render(request, "partials/empty.html", toast=message,
                       events=("refreshDrawer", "refreshBoard", "refreshStatus", "refreshOutbox", "closeModal"))
     return editor(request, outreach_id, toast="Draft saved", events=("refreshDrawer",))
 
@@ -429,6 +434,9 @@ def outreach_action(outreach_id: int, action: str):
                     item.status = OutreachStatus.DRAFT
                 outreach.approve(session, item)
                 message = "Re-queued"
+            elif action == "mark-sent":
+                outreach.mark_sent_manually(session, item)
+                message = "Recorded as sent"
             else:
                 raise HTTPException(404, "Unknown action")
         except outreach.OutreachError as exc:
@@ -451,9 +459,10 @@ def outbox_control(action: str, session: SessionDep):
 
 @router.post("/harvest")
 def harvest_now():
-    if harvest_running():
+    try:
+        start_harvest(None)
+    except PipelineError:
         return toast_only("A harvest is already running", "info")
-    _background(_harvest_in_background, None)
     return toast_only("Harvest started - watch the live log", "success", events=("refreshStatus",))
 
 
@@ -491,9 +500,10 @@ def company_action(request: Request, company_id: int, action: str):
             session.add(company)
             message = f"{company.name} {'enabled' if company.enabled else 'disabled'}"
         elif action == "harvest":
-            if harvest_running():
+            try:
+                start_harvest([company.id])
+            except PipelineError:
                 return toast_only("A harvest is already running", "info")
-            _background(_harvest_in_background, [company.id])
             message = f"Harvesting {company.name}..."
         elif action == "delete":
             for job in session.exec(select(Job).where(Job.company_id == company.id)).all():
@@ -542,6 +552,95 @@ def reload_profile(request: Request):
         pretty = json.dumps(profile_to_dict(profile), indent=2, ensure_ascii=False)
     return render(request, "partials/profile_form.html", {"profile_json": pretty, "errors": []},
                   toast="Reloaded config/candidate_profile.json")
+
+
+# --- settings (editable in the browser build; .env on a local install) --------------------
+
+def _settings_context(values: dict[str, str] | None = None, errors: list[str] | None = None) -> dict:
+    from .. import websettings
+
+    settings = get_settings()
+    return {
+        "page": "settings",
+        "groups": websettings.groups(),
+        "values": values if values is not None else websettings.current_values(settings),
+        "errors": errors or [],
+        "editable": settings.web_mode,
+        "engines": available_engines(),
+    }
+
+
+@router.get("/settings", response_class=HTMLResponse)
+def settings_page(request: Request):
+    return render(request, "settings.html", _settings_context())
+
+
+@router.post("/settings", response_class=HTMLResponse)
+async def save_settings(request: Request):
+    from .. import websettings
+
+    if not get_settings().web_mode:
+        return toast_only("Edit the .env file and restart to change settings on a local install")
+    form = await request.form()
+    values = websettings.from_form({key: str(value) for key, value in form.items()})
+    errors = websettings.validate(values)
+    if errors:
+        return render(request, "partials/settings_form.html", _settings_context(values, errors),
+                      toast="Settings not saved - fix the errors", kind="error")
+    with session_scope() as session:
+        websettings.save(session, values)
+    websettings.apply(values)
+    log.info("Settings updated (sending mode: %s)", get_settings().email_backend.replace("_", " "))
+    return render(request, "partials/settings_form.html", _settings_context(), toast="Settings saved",
+                  events=("refreshStatus", "settingsChanged"))
+
+
+@router.get("/settings/backup.db")
+def download_backup():
+    from ..backup import BackupError, backup_bytes
+
+    try:
+        data = backup_bytes()
+    except BackupError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    name = f"referralpilot-backup-{utcnow().strftime('%Y%m%d-%H%M')}.db"
+    return Response(data, media_type="application/vnd.sqlite3",
+                    headers={"Content-Disposition": f'attachment; filename="{name}"'})
+
+
+def _reapply_web_settings() -> None:
+    from .. import websettings
+
+    with session_scope() as session:
+        stored = websettings.load(session)
+    websettings.apply(stored)
+
+
+@router.post("/settings/restore")
+async def restore_backup(request: Request):
+    from ..backup import BackupError, restore_bytes
+
+    if not get_settings().web_mode:
+        return toast_only("Restoring is only available in the browser edition - copy the .db file instead")
+    try:
+        restore_bytes(await request.body())
+    except BackupError as exc:
+        return toast_only(str(exc))
+    _reapply_web_settings()
+    log.info("Restored data from a backup file")
+    return toast_only("Backup restored", "success", events=("refreshStatus", "reloadPage"))
+
+
+@router.post("/settings/reset")
+def reset_data():
+    from ..backup import reset_all
+
+    if not get_settings().web_mode:
+        return toast_only("Delete data/referralpilot.db to reset a local install")
+    reset_all()
+    _reapply_web_settings()
+    log.info("All data was reset to the sample profile and companies")
+    return toast_only("Everything was reset", "success", events=("refreshStatus", "reloadPage"))
 
 
 # --- JSON API --------------------------------------------------------------------------

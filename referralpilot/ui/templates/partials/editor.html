@@ -32,7 +32,7 @@
       </label>
       <div class="flex flex-wrap gap-2 text-xs">
         {% if item.type == 'initial' %}
-          {% if attach %}<span class="chip bg-slate-100 text-slate-700">📎 Tailored resume attached ({{ item.attachment_path|basename }})</span>
+          {% if attach %}<span class="chip bg-slate-100 text-slate-700">📎 Tailored resume attached ({{ item.attachment_path|basename }}) · <a class="link" href="/jobs/{{ item.job_id }}/resume.pdf" download>download</a></span>
           {% else %}<span class="chip bg-amber-50 text-amber-700">No resume attached - compile one first or set ATTACH_RESUME</span>{% endif %}
         {% else %}
           <span class="chip bg-slate-100 text-slate-700">Threaded reply (In-Reply-To {{ item.in_reply_to or 'original' }})</span>
@@ -43,14 +43,22 @@
       {% if editable %}
       <p class="rounded-lg bg-indigo-50 px-3 py-2 text-xs text-indigo-800">
         Approved emails are drip-fed by the scheduler: at most {{ status.limit }} per 24h, a random 3–7 minutes apart,
-        send window {{ status.window }}{% if status.dry_run %}. <strong>Dry-run mode:</strong> messages are written to <code>exports/outbox/</code>, nothing is sent{% endif %}.
+        send window {{ status.window }}{% if status.dry_run %}. <strong>Dry-run mode:</strong> {% if settings().web_mode %}emails stay in this browser's outbox{% else %}messages are written to <code>exports/outbox/</code>{% endif %}, nothing is sent{% endif %}.
+        Prefer to send it yourself? <b>Open in Gmail</b>, attach the PDF, send, then <b>Mark as sent</b>.
       </p>
       {% endif %}
     </div>
 
     <footer class="flex flex-wrap items-center justify-end gap-2 border-t border-slate-200 px-5 py-3">
-      {% if editable and item.type == 'initial' and item.status == 'draft' %}
-      <button type="button" class="btn btn-ghost mr-auto text-xs" hx-post="/contacts/{{ item.contact_id }}/draft" hx-vals='{"regenerate": "true"}' hx-target="#modal">Regenerate</button>
+      {% if editable %}
+      <div class="mr-auto flex flex-wrap items-center gap-1">
+        {% if item.type == 'initial' and item.status == 'draft' %}
+        <button type="button" class="btn btn-ghost text-xs" hx-post="/contacts/{{ item.contact_id }}/draft" hx-vals='{"regenerate": "true"}' hx-target="#modal">Regenerate</button>
+        {% endif %}
+        <button type="button" class="btn btn-ghost text-xs" data-compose="gmail" title="Open this email in Gmail's composer">Open in Gmail ↗</button>
+        <button type="button" class="btn btn-ghost text-xs" hx-post="/outreach/{{ item.id }}" hx-include="closest form" hx-vals='{"mark_sent": "true"}'
+                hx-target="#modal" hx-confirm="Did you send this email yourself? It will be recorded as sent and count toward today's limit.">Mark as sent</button>
+      </div>
       {% endif %}
       <button type="button" class="btn" onclick="closeModal()">Close</button>
       {% if editable %}

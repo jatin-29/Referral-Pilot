@@ -1,0 +1,44 @@
+<form id="settings-form" class="mt-4 space-y-5" hx-post="/settings" hx-target="#settings-form" hx-swap="outerHTML">
+  {% if errors %}
+  <div class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+    <p class="font-medium">Please fix:</p>
+    <ul class="mt-1 list-disc pl-5">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+  {% for group, fields in groups %}
+  <fieldset class="rounded-xl border border-slate-200 bg-white p-4" {% if not editable %}disabled{% endif %}>
+    <legend class="section-title px-1">{{ group }}</legend>
+    <div class="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
+      {% for field in fields %}
+      {% set value = values.get(field.name, '') %}
+      <label class="block text-sm {{ 'sm:col-span-2' if field.help|length > 90 else '' }}">
+        {% if field.kind == 'bool' %}
+        <span class="flex items-center gap-2">
+          <input type="checkbox" name="{{ field.name }}" value="true" class="rounded border-slate-300" {% if value == 'true' %}checked{% endif %}>
+          <span class="font-medium text-slate-700">{{ field.label }}</span>
+        </span>
+        {% else %}
+        <span class="field-label">{{ field.label }}</span>
+        {% if field.kind == 'select' %}
+        <select name="{{ field.name }}" class="input mt-1">
+          {% for option in field.options %}<option value="{{ option }}" {% if value == option %}selected{% endif %}>{{ option }}</option>{% endfor %}
+        </select>
+        {% else %}
+        <input name="{{ field.name }}" value="{{ value }}" class="input mt-1 {{ 'font-mono text-xs' if field.kind == 'password' else '' }}"
+               type="{{ 'number' if field.kind == 'number' else ('time' if field.kind == 'time' else ('password' if field.kind == 'password' else 'text')) }}"
+               {% if field.kind == 'number' %}step="any"{% endif %} autocomplete="off" spellcheck="false">
+        {% endif %}
+        {% endif %}
+        {% if field.help %}<span class="mt-1 block text-xs text-slate-500">{{ field.help }}</span>{% endif %}
+      </label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  {% endfor %}
+  {% if editable %}
+  <div class="flex items-center gap-2">
+    <button class="btn btn-primary">Save settings</button>
+    <span class="text-xs text-slate-500">Leave a field empty to use the default.</span>
+  </div>
+  {% endif %}
+</form>

@@ -108,7 +108,7 @@ class SendPolicy:
 
 @dataclass
 class TickResult:
-    status: str  # sent | idle | paused | outside_window | waiting | daily_limit | error
+    status: str  # sent | idle | paused | outside_window | blocked | waiting | daily_limit | error
     outreach_id: int | None = None
     detail: str = ""
     next_send_at: datetime | None = None
@@ -129,6 +129,7 @@ class QueueStatus:
     next_send_at: datetime | None
     next_window_at: datetime | None
     capacity_frees_at: datetime | None
+    blocked: str | None = None  # the sender cannot send right now (e.g. Gmail not connected)
 
 
 def is_paused(session: Session) -> tuple[bool, str | None]:
@@ -245,6 +246,7 @@ class OutreachQueue:
             next_send_at=state_get_datetime(session, STATE_NEXT_SEND),
             next_window_at=None if self.policy.in_window(now) else self.policy.next_window_start(now),
             capacity_frees_at=times[0] + timedelta(hours=24) if full else None,
+            blocked=self.sender.blocked_reason(),
         )
 
     # --- one scheduler tick ---------------------------------------------------
@@ -256,6 +258,9 @@ class OutreachQueue:
                 return TickResult("paused", detail=reason or "")
             if not self.policy.in_window(now):
                 return TickResult("outside_window", next_send_at=self.policy.next_window_start(now))
+            blocked = self.sender.blocked_reason()
+            if blocked:
+                return TickResult("blocked", detail=blocked)
             next_at = state_get_datetime(session, STATE_NEXT_SEND)
             if next_at and now < next_at:
                 return TickResult("waiting", next_send_at=next_at)
@@ -370,7 +375,7 @@ class OutreachQueue:
     def _build(self, session: Session, item: OutreachLog):
         profile: CandidateProfile | None = get_active_profile(session)
         contact = session.get(ReferralContact, item.contact_id)
-        sender_email = self.settings.sender_email or (profile.email if profile else "")
+        sender_email = self.settings.sender_email or self.sender.account_email or (profile.email if profile else "")
         sender_name = self.settings.sender_name or (profile.full_name if profile else "")
         parent = session.get(OutreachLog, item.parent_id) if item.parent_id else None
         attachments = []

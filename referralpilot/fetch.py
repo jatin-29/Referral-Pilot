@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 from urllib.robotparser import RobotFileParser
 
 import httpx
@@ -22,12 +22,94 @@ class FetchError(RuntimeError):
         self.status_code = status_code
 
 
+class BlockedRequestError(httpx.ConnectError):
+    """The browser refused the request (CORS, offline...). Retrying cannot help."""
+
+
+# Response headers the browser has already acted on (it decompresses bodies itself).
+_DROP_RESPONSE_HEADERS = {"content-encoding", "content-length", "transfer-encoding", "connection"}
+# Request headers a page may not set (https://fetch.spec.whatwg.org/#forbidden-request-header).
+_FORBIDDEN_REQUEST_HEADERS = {
+    "accept-charset", "accept-encoding", "access-control-request-headers", "access-control-request-method",
+    "connection", "content-length", "cookie", "cookie2", "date", "dnt", "expect", "host", "keep-alive",
+    "origin", "referer", "te", "trailer", "transfer-encoding", "upgrade", "user-agent", "via",
+}
+# Hosts that must never be relayed through a third-party CORS proxy (they send CORS headers anyway).
+_NEVER_PROXY = ("googleapis.com", "google.com", "dns.google")
+
+
+class BrowserTransport(httpx.BaseTransport):
+    """httpx transport for the browser build: synchronous XMLHttpRequest in the page's Web Worker.
+
+    Browsers enforce CORS, so a cross-origin API only answers when it sends
+    Access-Control-Allow-Origin. `cors_proxy` (opt-in, e.g.
+    "https://corsproxy.io/?url={url}") relays requests the browser blocked.
+    """
+
+    def __init__(self, timeout: float = 20.0, cors_proxy: str = ""):
+        self.timeout = timeout
+        self.cors_proxy = cors_proxy.strip()
+
+    def handle_request(self, request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        try:
+            return self._send(request, url)
+        except BlockedRequestError:
+            proxied = self._proxied(url)
+            if proxied is None:
+                raise
+            return self._send(request, proxied)
+
+    def _proxied(self, url: str) -> str | None:
+        host = urlparse(url).hostname or ""
+        if not self.cors_proxy or any(host == h or host.endswith("." + h) for h in _NEVER_PROXY):
+            return None
+        if "{url}" in self.cors_proxy:
+            return self.cors_proxy.replace("{url}", quote(url, safe=""))
+        return self.cors_proxy + quote(url, safe="")
+
+    def _send(self, request: httpx.Request, url: str) -> httpx.Response:
+        from js import Uint8Array, XMLHttpRequest  # type: ignore[import-not-found]  # Pyodide only
+
+        xhr = XMLHttpRequest.new()
+        xhr.open(request.method, url, False)
+        xhr.responseType = "arraybuffer"
+        xhr.timeout = int(self.timeout * 1000)
+        for name, value in request.headers.items():
+            lowered = name.lower()
+            if lowered in _FORBIDDEN_REQUEST_HEADERS or lowered.startswith(("sec-", "proxy-")):
+                continue
+            xhr.setRequestHeader(name, value)
+        body = request.read()
+        payload = None
+        if body:
+            payload = Uint8Array.new(len(body))
+            payload.assign(body)
+        try:
+            xhr.send(payload)
+        except Exception as exc:  # pyodide.ffi.JsException: NetworkError / TimeoutError
+            raise BlockedRequestError(f"{request.method} {url}: the browser blocked the request "
+                                      f"(no CORS access or offline)", request=request) from exc
+        if xhr.status == 0:
+            raise BlockedRequestError(f"{request.method} {url}: the browser blocked the request "
+                                      f"(no CORS access or offline)", request=request)
+        headers = []
+        for line in str(xhr.getAllResponseHeaders() or "").split("\r\n"):
+            name, sep, value = line.partition(":")
+            if sep and name.strip().lower() not in _DROP_RESPONSE_HEADERS:
+                headers.append((name.strip(), value.strip()))
+        content = bytes(xhr.response.to_py()) if xhr.response else b""
+        return httpx.Response(xhr.status, headers=headers, content=content, request=request)
+
+
 def build_client(settings: Settings | None = None, *, transport: httpx.BaseTransport | None = None) -> httpx.Client:
     settings = settings or get_settings()
     if transport is None and settings.demo_mode:
         from .demo import demo_transport
 
         transport = demo_transport()
+    if transport is None and settings.web_mode:
+        transport = BrowserTransport(settings.http_timeout_seconds, settings.cors_proxy)
     return httpx.Client(
         timeout=httpx.Timeout(settings.http_timeout_seconds),
         headers={
@@ -56,7 +138,7 @@ def request_with_retries(
             response = client.request(method, url, **kwargs)
         except httpx.TransportError as exc:
             last_error = exc
-            if attempt < retries:
+            if attempt < retries and not isinstance(exc, BlockedRequestError):
                 sleep(backoff * (2**attempt))
                 continue
             raise FetchError(f"{method} {url} failed: {exc}") from exc

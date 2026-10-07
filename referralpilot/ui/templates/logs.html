@@ -8,7 +8,7 @@
       <p class="mt-1 text-sm text-slate-500">Scheduler, scraper, tailor, prospector and outreach events - streamed live.</p>
     </div>
     <form method="get" class="flex items-center gap-2 text-sm">
-      <select name="source" class="input w-44" onchange="this.form.submit()">
+      <select name="source" class="input w-44" onchange="this.form.requestSubmit()">
         <option value="">All sources</option>
         {% for s in sources %}<option value="{{ s }}" {% if s == source %}selected{% endif %}>{{ s }}</option>{% endfor %}
       </select>
@@ -27,12 +27,11 @@
   {% endif %}
 
   <div id="live-log" class="live-log mt-4 h-[65vh] overflow-y-auto rounded-xl bg-slate-900 px-4 py-3 font-mono text-[12px] leading-5 text-slate-100"
-       data-backlog="0" data-source="{{ source or '' }}">
+       data-backlog="0" data-after="{{ rows[-1].id if rows else 0 }}" data-source="{{ source or '' }}">
     {% for row in rows %}
     <div class="log-line log-{{ row.level|lower }}"><span class="log-time">{{ row.created_at|dt('%d %b %H:%M:%S') }}</span><span class="log-src">{{ row.source }}</span><span class="log-msg">{{ row.message }}</span></div>
     {% endfor %}
   </div>
   <p class="mt-2 text-xs text-slate-400">Showing the latest {{ rows|length }} entries; new events appear at the bottom.</p>
 </div>
-<script>window.LOG_AFTER_ID = {{ rows[-1].id if rows else 0 }};</script>
 {% endblock %}
