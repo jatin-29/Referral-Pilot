@@ -82,6 +82,19 @@ jobs:
           sleep 1
           node scripts/web_smoke.cjs "http://127.0.0.1:8000/$repo/" --out web-smoke
 
+      - name: Smoke-test in Firefox and WebKit (advisory, does not block publishing)
+        if: github.event_name != 'schedule'
+        continue-on-error: true
+        run: |
+          npx --no-install playwright install --with-deps firefox webkit > /dev/null
+          repo="${GITHUB_REPOSITORY#*/}"
+          status=0
+          for browser in firefox webkit; do
+            PW_BROWSER=$browser node scripts/web_smoke.cjs "http://127.0.0.1:8000/$repo/" --out "web-smoke/$browser" \
+              || { status=1; echo "::warning title=$browser smoke test failed::See the log of this step"; }
+          done
+          exit $status
+
       - name: Keep the smoke-test screenshot
         if: always()
         uses: actions/upload-artifact@v4
