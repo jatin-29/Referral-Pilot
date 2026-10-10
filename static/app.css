@@ -1,0 +1,30 @@
+/* Hand-written styles that are not Tailwind utilities. */
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline-block; }
+
+.card-ghost { opacity: 0.35; }
+.card-chosen { box-shadow: 0 10px 25px -10px rgba(79, 70, 229, 0.45); }
+
+.stage-dot { display: inline-block; width: 8px; height: 8px; border-radius: 9999px; background: #94a3b8; }
+.stage-discovered { background: #94a3b8; }
+.stage-tailored { background: #0ea5e9; }
+.stage-queued { background: #6366f1; }
+.stage-contacted { background: #8b5cf6; }
+.stage-followup_sent { background: #d946ef; }
+.stage-replied { background: #10b981; }
+.stage-archived { background: #cbd5e1; }
+
+.live-log .log-line { display: flex; gap: 0.75rem; white-space: pre-wrap; word-break: break-word; }
+.live-log .log-time { color: #64748b; flex: none; }
+.live-log .log-src { color: #818cf8; flex: none; width: 6.5rem; overflow: hidden; text-overflow: ellipsis; }
+.live-log .log-warning .log-msg { color: #fcd34d; }
+.live-log .log-error .log-msg, .live-log .log-critical .log-msg { color: #fda4af; }
+
+.toast { animation: toast-in 0.18s ease-out; transition: opacity 0.4s, transform 0.4s; }
+.toast-hide { opacity: 0; transform: translateY(6px); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+details > summary { list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before { content: "▸"; display: inline-block; margin-right: 0.4rem; color: #94a3b8; transition: transform 0.15s; }
+details[open] > summary::before { transform: rotate(90deg); }

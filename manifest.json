@@ -1,0 +1,52 @@
+{
+  "name": "ReferralPilot",
+  "version": "0.1.0",
+  "commit": "ea17a66",
+  "build": "1da48484ecf5",
+  "built_at": "2026-10-10T21:51:32+00:00",
+  "app": {
+    "file": "app.zip",
+    "sha256": "1f2bc8782b72196eea5d233b19668deea5d5190562a453e6df1cbe309daad824"
+  },
+  "pyodide": {
+    "version": "314.0.7",
+    "mode": "self-host",
+    "indexURL": "pyodide/",
+    "lockFile": "pyodide-lock.json?v=3305794ffde5fc02",
+    "packages": [
+      "annotated-doc",
+      "annotated-types",
+      "anyio",
+      "beautifulsoup4",
+      "certifi",
+      "defusedxml",
+      "fastapi",
+      "fonttools",
+      "fpdf2",
+      "h11",
+      "httpcore",
+      "httpx",
+      "idna",
+      "jinja2",
+      "markupsafe",
+      "pydantic",
+      "pydantic-core",
+      "pydantic-settings",
+      "python-dotenv",
+      "python-multipart",
+      "sniffio",
+      "soupsieve",
+      "sqlalchemy",
+      "sqlmodel",
+      "starlette",
+      "typing-extensions",
+      "typing-inspection",
+      "tzdata"
+    ]
+  },
+  "jobs": {
+    "file": "jobs.json",
+    "generated_at": "2026-10-10T21:51:31.296019+00:00",
+    "count": 239
+  }
+}

@@ -1,0 +1,442 @@
+{
+ "info": {
+  "abi_version": "2026_0",
+  "arch": "wasm32",
+  "platform": "emscripten_5_0_3",
+  "python": "3.14.2"
+ },
+ "packages": {
+  "annotated-doc": {
+   "depends": [],
+   "file_name": "pyodide/annotated_doc-0.0.4-py3-none-any.whl",
+   "imports": [
+    "annotated_doc"
+   ],
+   "install_dir": "site",
+   "name": "annotated-doc",
+   "package_type": "package",
+   "sha256": "fe0eb2459fae5e2b67eec182a864ee4e3b7fade3bc8542fc5b87b23f224fa7a4",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "0.0.4"
+  },
+  "annotated-types": {
+   "depends": [],
+   "file_name": "pyodide/annotated_types-0.7.0-py3-none-any.whl",
+   "imports": [
+    "annotated_types"
+   ],
+   "install_dir": "site",
+   "name": "annotated-types",
+   "package_type": "package",
+   "sha256": "6541523b4b16c1953d2fc9b82fb86c540eea9f78fca329ab371ed13a8b0faa51",
+   "tool": {},
+   "unvendored_tests": true,
+   "version": "0.7.0"
+  },
+  "anyio": {
+   "depends": [
+    "sniffio",
+    "typing-extensions"
+   ],
+   "file_name": "pyodide/anyio-4.13.0-py3-none-any.whl",
+   "imports": [
+    "anyio"
+   ],
+   "install_dir": "site",
+   "name": "anyio",
+   "package_type": "package",
+   "sha256": "ea08c971f29d33d940864407ceb08601836ac8924d3b4f27db6612ed47faeafc",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "4.13.0"
+  },
+  "beautifulsoup4": {
+   "depends": [
+    "soupsieve",
+    "typing-extensions"
+   ],
+   "file_name": "pyodide/beautifulsoup4-4.14.3-py3-none-any.whl",
+   "imports": [
+    "bs4"
+   ],
+   "install_dir": "site",
+   "name": "beautifulsoup4",
+   "package_type": "package",
+   "sha256": "60e71fb66c245d535d80c63a9ab922ee2ab086624a04e0995bc601bfea0ef750",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "4.14.3"
+  },
+  "certifi": {
+   "depends": [],
+   "file_name": "pyodide/certifi-2026.4.22-py3-none-any.whl",
+   "imports": [
+    "certifi"
+   ],
+   "install_dir": "site",
+   "name": "certifi",
+   "package_type": "package",
+   "sha256": "c2c0091986db798df5fd84582d289496f31244a898ec032b7015278c2d82c80c",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2026.4.22"
+  },
+  "defusedxml": {
+   "depends": [],
+   "file_name": "wheels/defusedxml-0.7.1-py2.py3-none-any.whl",
+   "imports": [
+    "defusedxml"
+   ],
+   "install_dir": "site",
+   "name": "defusedxml",
+   "package_type": "package",
+   "sha256": "a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "0.7.1"
+  },
+  "fastapi": {
+   "depends": [
+    "httpx",
+    "jinja2",
+    "pydantic",
+    "starlette",
+    "anyio",
+    "annotated-doc"
+   ],
+   "file_name": "pyodide/fastapi-0.136.1-py3-none-any.whl",
+   "imports": [
+    "fastapi"
+   ],
+   "install_dir": "site",
+   "name": "fastapi",
+   "package_type": "package",
+   "sha256": "365df896a8691060b511a0a586d957edc1e90dbc96219c208e79824744cf0b59",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "0.136.1"
+  },
+  "fonttools": {
+   "depends": [],
+   "file_name": "pyodide/fonttools-4.62.1-py3-none-any.whl",
+   "imports": [
+    "fontTools"
+   ],
+   "install_dir": "site",
+   "name": "fonttools",
+   "package_type": "package",
+   "sha256": "0d1516e073fd0a8d8e6d9af46417b6a26209a42518024a18f7085e72d2599605",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "4.62.1"
+  },
+  "fpdf2": {
+   "depends": [
+    "defusedxml",
+    "fonttools"
+   ],
+   "file_name": "wheels/fpdf2-2.8.9-py3-none-any.whl",
+   "imports": [
+    "fpdf"
+   ],
+   "install_dir": "site",
+   "name": "fpdf2",
+   "package_type": "package",
+   "sha256": "6e1d94af6d6311950a23dec7fb5fc84b000203eb59aee8e76c1e701b12a14976",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2.8.9"
+  },
+  "h11": {
+   "depends": [],
+   "file_name": "pyodide/h11-0.16.0-py3-none-any.whl",
+   "imports": [
+    "h11"
+   ],
+   "install_dir": "site",
+   "name": "h11",
+   "package_type": "package",
+   "sha256": "d920caa25363694bc8de71ba42e5e2bc3353c8df6bcf5025551386e279bca264",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "0.16.0"
+  },
+  "httpcore": {
+   "depends": [
+    "certifi",
+    "h11"
+   ],
+   "file_name": "pyodide/httpcore-1.0.9-py3-none-any.whl",
+   "imports": [
+    "httpcore"
+   ],
+   "install_dir": "site",
+   "name": "httpcore",
+   "package_type": "package",
+   "sha256": "27bc91994ad7e21a8333608b8ba5e2b9655ae9d86820d4cefb03dd8db8c5de48",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "1.0.9"
+  },
+  "httpx": {
+   "depends": [],
+   "file_name": "pyodide/httpx-0.28.1-py3-none-any.whl",
+   "imports": [
+    "httpx"
+   ],
+   "install_dir": "site",
+   "name": "httpx",
+   "package_type": "package",
+   "sha256": "830cb1ec73bb4c46f2e38ebeb3dd50ffb45f62b804dd040519d34fe36f8fdfc7",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "0.28.1"
+  },
+  "idna": {
+   "depends": [],
+   "file_name": "pyodide/idna-3.11-py3-none-any.whl",
+   "imports": [
+    "idna"
+   ],
+   "install_dir": "site",
+   "name": "idna",
+   "package_type": "package",
+   "sha256": "1619419bc899f07c7a608a12e8238e5e0bc15bb25fec90cfe20a86bb849ba0d8",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "3.11"
+  },
+  "jinja2": {
+   "depends": [
+    "markupsafe"
+   ],
+   "file_name": "pyodide/jinja2-3.1.6-py3-none-any.whl",
+   "imports": [
+    "jinja2"
+   ],
+   "install_dir": "site",
+   "name": "Jinja2",
+   "package_type": "package",
+   "sha256": "9330ec9cf2241fb8fc352928ea5e72016bf82de1d3d3b71ffea52a093a3ebab8",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "3.1.6"
+  },
+  "markupsafe": {
+   "depends": [],
+   "file_name": "pyodide/markupsafe-3.0.3-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "markupsafe"
+   ],
+   "install_dir": "site",
+   "name": "MarkupSafe",
+   "package_type": "package",
+   "sha256": "b44c364dc0d19e4210ce68ab77833c2b5d608f78fe6966263add4fc1fa667d97",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "3.0.3"
+  },
+  "pydantic": {
+   "depends": [
+    "typing-extensions",
+    "pydantic_core",
+    "annotated-types",
+    "typing-inspection"
+   ],
+   "file_name": "pyodide/pydantic-2.12.5-py3-none-any.whl",
+   "imports": [
+    "pydantic"
+   ],
+   "install_dir": "site",
+   "name": "pydantic",
+   "package_type": "package",
+   "sha256": "04854875001e07a8a74d87b7c80296cba168773d8c9804e232d695f82484d7d7",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2.12.5"
+  },
+  "pydantic-core": {
+   "depends": [
+    "typing-extensions"
+   ],
+   "file_name": "pyodide/pydantic_core-2.41.5-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "pydantic_core"
+   ],
+   "install_dir": "site",
+   "name": "pydantic_core",
+   "package_type": "package",
+   "sha256": "54703fa42a0d4d574283cfb8f08050ba7820c9a42b0a21bc1286407d9a9e54da",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2.41.5"
+  },
+  "pydantic-settings": {
+   "depends": [
+    "pydantic",
+    "python-dotenv",
+    "typing-inspection"
+   ],
+   "file_name": "wheels/pydantic_settings-2.15.0-py3-none-any.whl",
+   "imports": [
+    "pydantic_settings"
+   ],
+   "install_dir": "site",
+   "name": "pydantic-settings",
+   "package_type": "package",
+   "sha256": "0ba092c291c94baceb5eff768aa0d56400a457585bc0175925a5a5510303da42",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2.15.0"
+  },
+  "python-dotenv": {
+   "depends": [],
+   "file_name": "wheels/python_dotenv-1.2.4-py3-none-any.whl",
+   "imports": [
+    "dotenv"
+   ],
+   "install_dir": "site",
+   "name": "python-dotenv",
+   "package_type": "package",
+   "sha256": "42269a8a5b3fd54ffa6f3d84b18abed50064717576b4ecf03dc4a55d8aa04fdc",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "1.2.4"
+  },
+  "python-multipart": {
+   "depends": [],
+   "file_name": "wheels/python_multipart-0.0.32-py3-none-any.whl",
+   "imports": [
+    "python_multipart",
+    "multipart"
+   ],
+   "install_dir": "site",
+   "name": "python-multipart",
+   "package_type": "package",
+   "sha256": "ff6d3f776f16878c894e52e107296ffc890e913c611b1a4ec6c44e2821fe2e23",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "0.0.32"
+  },
+  "sniffio": {
+   "depends": [],
+   "file_name": "pyodide/sniffio-1.3.1-py3-none-any.whl",
+   "imports": [
+    "sniffio"
+   ],
+   "install_dir": "site",
+   "name": "sniffio",
+   "package_type": "package",
+   "sha256": "1e0f350ca8eac5252c1af9a8d93a7edd70056c1eddf5661f6950688094d1f670",
+   "tool": {},
+   "unvendored_tests": true,
+   "version": "1.3.1"
+  },
+  "soupsieve": {
+   "depends": [],
+   "file_name": "pyodide/soupsieve-2.8.3-py3-none-any.whl",
+   "imports": [
+    "soupsieve"
+   ],
+   "install_dir": "site",
+   "name": "soupsieve",
+   "package_type": "package",
+   "sha256": "675af05b7a3de6b5f8e0b89eb7644364a809af5f374b911b9f8c6225417c3299",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2.8.3"
+  },
+  "sqlalchemy": {
+   "depends": [
+    "typing-extensions"
+   ],
+   "file_name": "pyodide/sqlalchemy-2.0.48-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+   "imports": [
+    "sqlalchemy"
+   ],
+   "install_dir": "site",
+   "name": "sqlalchemy",
+   "package_type": "package",
+   "sha256": "e12ade7bb0e2746d59fddb40ed0a26caf70d2d3bb483e2e022850939322c5105",
+   "tool": {},
+   "unvendored_tests": true,
+   "version": "2.0.48"
+  },
+  "sqlmodel": {
+   "depends": [
+    "sqlalchemy",
+    "pydantic",
+    "typing-extensions"
+   ],
+   "file_name": "wheels/sqlmodel-0.0.48-py3-none-any.whl",
+   "imports": [
+    "sqlmodel"
+   ],
+   "install_dir": "site",
+   "name": "sqlmodel",
+   "package_type": "package",
+   "sha256": "8d389bf735b03a17508e93e888c13a30ef1ddca22dd8e57add12317401e4112e",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "0.0.48"
+  },
+  "starlette": {
+   "depends": [],
+   "file_name": "pyodide/starlette-1.0.0-py3-none-any.whl",
+   "imports": [
+    "starlette"
+   ],
+   "install_dir": "site",
+   "name": "starlette",
+   "package_type": "package",
+   "sha256": "df724767987f398d2c504d1201acdb3aa8c0032f2e50c9815c389863f62d0ce1",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "1.0.0"
+  },
+  "typing-extensions": {
+   "depends": [],
+   "file_name": "pyodide/typing_extensions-4.15.0-py3-none-any.whl",
+   "imports": [
+    "typing_extensions"
+   ],
+   "install_dir": "site",
+   "name": "typing-extensions",
+   "package_type": "package",
+   "sha256": "4fec68770a05408e668a4fa53d6bf4f0f684b9dacf820c7c5d6e97d3ad225e29",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "4.15.0"
+  },
+  "typing-inspection": {
+   "depends": [],
+   "file_name": "pyodide/typing_inspection-0.4.2-py3-none-any.whl",
+   "imports": [
+    "typing_inspection"
+   ],
+   "install_dir": "site",
+   "name": "typing-inspection",
+   "package_type": "package",
+   "sha256": "deb989630985f7a7296b90357a947a804a7612cecbb6439d6e71128e01f61051",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "0.4.2"
+  },
+  "tzdata": {
+   "depends": [],
+   "file_name": "pyodide/tzdata-2025.3-py2.py3-none-any.whl",
+   "imports": [
+    "tzdata"
+   ],
+   "install_dir": "site",
+   "name": "tzdata",
+   "package_type": "package",
+   "sha256": "9ce669f4f075843c7ff6a3f3dc306ebafa504717ec7beb6aa2233693722ddcfc",
+   "tool": {},
+   "unvendored_tests": false,
+   "version": "2025.3"
+  }
+ },
+ "tool": {}
+}
